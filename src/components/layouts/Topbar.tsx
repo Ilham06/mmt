@@ -26,9 +26,11 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Link from 'next/link';
 import { useState } from 'react';
 import { sidebarWidth } from './Sidebar';
+import { useRouter } from 'next/navigation';
 
 
 export function Topbar() {
+  const router = useRouter()
   const [openSearch, setOpenSearch] = useState(false);
 
   const [anchorNotif, setAnchorNotif] = useState<null | HTMLElement>(null);
@@ -58,6 +60,16 @@ export function Topbar() {
       time: '5h ago',
     },
   ];
+
+  const handleLogout = async () => {
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+  });
+
+  router.push('login')
+};
+
 
   return (
     <>
@@ -230,7 +242,7 @@ export function Topbar() {
         <Divider sx={{ my: 1 }} />
 
         <MenuItem
-          onClick={() => alert('Logged out')}
+          onClick={handleLogout}
           sx={{ color: 'error.main', fontWeight: 600 }}
         >
           <ListItemIcon>

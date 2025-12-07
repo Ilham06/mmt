@@ -1,14 +1,183 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+enum WalletType {
+  CASH
+  BANK
+  EWALLET
+  CREDIT
+}
+
+enum RecurringInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// CATEGORY
+// ============================================================
+
+model Category {
+  id        String       @id @default(uuid())
+  name      String
+  type      CategoryType
+  icon      String
+  color     String
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  transactions           Transaction[]
+  budgets                Budget[]
+  recurringTransactions  RecurringTransaction[]
+}
+
+// ============================================================
+// WALLET
+// ============================================================
+
+model Wallet {
+  id        String       @id @default(uuid())
+  name      String
+  type      WalletType
+  balance   Int          @default(0)
+  isPrimary Boolean      @default(false)
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  transactions           Transaction[] @relation("WalletTransactions")
+  transfersOut           Transaction[] @relation("TransferOut")
+  transfersIn            Transaction[] @relation("TransferIn")
+  recurringTransactions  RecurringTransaction[]
+}
+
+// ============================================================
+// TRANSACTION
+// ============================================================
+
+model Transaction {
+  id        String           @id @default(uuid())
+  title     String
+  amount    Int
+  type      TransactionType
+  date      DateTime
+  note      String?
+
+  // Category
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  // Wallet
+  walletId   String?
+  wallet     Wallet?   @relation("WalletTransactions", fields: [walletId], references: [id])
+
+  // Transfer
+  fromWalletId String?
+  fromWallet   Wallet? @relation("TransferOut", fields: [fromWalletId], references: [id])
+
+  toWalletId   String?
+  toWallet     Wallet? @relation("TransferIn", fields: [toWalletId], references: [id])
+
+  // Receipt
+  receiptUrl String?
+
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// BUDGET
+// ============================================================
+
+model Budget {
+  id        String     @id @default(uuid())
+  limit     Int
+  period    String
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ============================================================
+// RECURRING TRANSACTIONS
+// ============================================================
+
+model RecurringTransaction {
+  id        String             @id @default(uuid())
+  title     String
+  amount    Int
+  type      TransactionType
+  interval  RecurringInterval
+  nextRun   DateTime
+  active    Boolean            @default(true)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  walletId   String?
+  wallet     Wallet?    @relation(fields: [walletId], references: [id])
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+// ============================================================
+// ATTACHMENT
+// ============================================================
+
+model Attachment {
+  id            String     @id @default(uuid())
+  url           String
+
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  createdAt     DateTime   @default(now())
 }
