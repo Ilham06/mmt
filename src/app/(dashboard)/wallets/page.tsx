@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Box,
@@ -9,75 +9,47 @@ import {
   MenuItem,
   Grid,
   Chip,
-  Button,
-} from '@mui/material';
+  CircularProgress,
+} from "@mui/material";
 
-import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
-import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
-import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
-import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
+import AccountBalanceRoundedIcon from "@mui/icons-material/AccountBalanceRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
-import { useState } from 'react';
-import PageWrapper from '@/components/layouts/pageWrapper';
-import Link from 'next/link';
-import AddWalletDialog from '@/components/ui/wallets/AddWalletDialog';
+import { useState } from "react";
+import PageWrapper from "@/components/layouts/pageWrapper";
+import Link from "next/link";
 
-// ======================= DUMMY WALLETS =======================
-const wallets = [
-  {
-    id: '1',
-    name: 'Main Wallet',
-    type: 'cash',
-    balance: 1250000,
-  },
-  {
-    id: '2',
-    name: 'BNI',
-    type: 'bank',
-    balance: 4075000,
-  },
-  {
-    id: '3',
-    name: 'OVO',
-    type: 'ewallet',
-    balance: 285000,
-  },
-  {
-    id: '4',
-    name: 'Jago',
-    type: 'bank',
-    balance: 560000,
-  },
-  {
-    id: '5',
-    name: 'BCA Credit Card',
-    type: 'credit',
-    balance: -1250000,
-  },
-];
+import AddWalletDialog from "@/components/ui/wallets/AddWalletDialog";
+import { useDeleteWalletMutation, useGetWalletsQuery } from "@/redux/slices/walletApi";
 
 // ======================= ICON MAP =======================
 const walletIcons: any = {
-  cash: <AccountBalanceWalletRoundedIcon />,
-  bank: <AccountBalanceRoundedIcon />,
-  ewallet: <AccountBalanceWalletRoundedIcon />,
-  credit: <CreditCardRoundedIcon />,
+  CASH: <AccountBalanceWalletRoundedIcon />,
+  BANK: <AccountBalanceRoundedIcon />,
+  EWALLET: <AccountBalanceWalletRoundedIcon />,
+  CREDIT: <CreditCardRoundedIcon />,
 };
 
 // ======================= COLOR MAP =======================
 const walletColors: any = {
-  cash: { bg: '#E3F2FD', color: '#1565C0', label: 'Cash' },
-  bank: { bg: '#E8F5E9', color: '#2E7D32', label: 'Bank' },
-  ewallet: { bg: '#FFFDE7', color: '#F9A825', label: 'e-Wallet' },
-  credit: { bg: '#FFEBEE', color: '#C62828', label: 'Credit Card' },
+  CASH: { bg: "#E3F2FD", color: "#1565C0", label: "Cash" },
+  BANK: { bg: "#E8F5E9", color: "#2E7D32", label: "Bank" },
+  EWALLET: { bg: "#FFFDE7", color: "#F9A825", label: "e-Wallet" },
+  CREDIT: { bg: "#FFEBEE", color: "#C62828", label: "Credit Card" },
 };
 
 export default function WalletsPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
 
+  // Fetch from API
+  const { data: wallets = [], isLoading } = useGetWalletsQuery();
+  const [deleteWallet] = useDeleteWalletMutation();
 
   const openMenu = (e: any, id: string) => {
     setAnchorEl(e.currentTarget);
@@ -89,18 +61,42 @@ export default function WalletsPage() {
     setActiveId(null);
   };
 
+  const handleEdit = () => {
+    const w = wallets.find((x: { id: string | null; }) => x.id === activeId);
+    setEditData(w);
+    setOpenDialog(true);
+    closeMenu();
+  };
+
+  const handleDelete = async () => {
+    await deleteWallet(activeId);
+    closeMenu();
+  };
+
+  // LOADING
+  if (isLoading)
+    return (
+      <PageWrapper title="Wallets">
+        <Box display="flex" justifyContent="center" mt={10}>
+          <CircularProgress />
+        </Box>
+      </PageWrapper>
+    );
+
   return (
     <PageWrapper
       title="Wallets"
       actions={{
         label: "Add Wallet",
-        onClick: () => setOpenDialog(true),
+        onClick: () => {
+          setEditData(null);
+          setOpenDialog(true);
+        },
         icon: <AddRoundedIcon />,
       }}
-
     >
       <Grid container spacing={3}>
-        {wallets.map((wallet) => {
+        {wallets.map((wallet: any) => {
           const style = walletColors[wallet.type];
 
           return (
@@ -109,17 +105,17 @@ export default function WalletsPage() {
                 sx={{
                   p: 3,
                   borderRadius: 3,
-                  boxShadow: 'var(--mui-shadow)',
-                  bgcolor: 'background.paper',
-                  position: 'relative',
-                  transition: '0.2s',
-                  '&:hover': { boxShadow: 'var(--mui-shadow-lg)' },
+                  boxShadow: "var(--mui-shadow)",
+                  bgcolor: "background.paper",
+                  position: "relative",
+                  transition: "0.2s",
+                  "&:hover": { boxShadow: "var(--mui-shadow-lg)" },
                 }}
               >
                 {/* MENU BUTTON */}
                 <IconButton
                   size="small"
-                  sx={{ position: 'absolute', top: 8, right: 8 }}
+                  sx={{ position: "absolute", top: 8, right: 8 }}
                   onClick={(e) => openMenu(e, wallet.id)}
                 >
                   <MoreVertRoundedIcon fontSize="small" />
@@ -133,9 +129,9 @@ export default function WalletsPage() {
                     borderRadius: 2,
                     bgcolor: style.bg,
                     color: style.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     mb: 2,
                     fontSize: 24,
                   }}
@@ -144,10 +140,14 @@ export default function WalletsPage() {
                 </Box>
 
                 {/* NAME */}
-                <Link href={'wallets/' + wallet.id} style={{ textDecoration: 'none', color: '#333' }}>
+                <Link
+                  href={`/wallets/${wallet.id}`}
+                  style={{ textDecoration: "none", color: "#333" }}
+                >
                   <Typography variant="h6" fontWeight={700}>
                     {wallet.name}
-                  </Typography></Link>
+                  </Typography>
+                </Link>
 
                 {/* TYPE LABEL */}
                 <Chip
@@ -166,12 +166,12 @@ export default function WalletsPage() {
                   variant="h5"
                   fontWeight={700}
                   mt={2}
-                  color={wallet.balance < 0 ? 'error.main' : 'text.primary'}
+                  color={wallet.balance < 0 ? "error.main" : "text.primary"}
                 >
-                  Rp {Math.abs(wallet.balance).toLocaleString('id-ID')}
+                  Rp {Math.abs(wallet.balance).toLocaleString("id-ID")}
                 </Typography>
 
-                {/* NEGATIVE BALANCE TAG FOR CREDIT */}
+                {/* NEGATIVE FOR CREDIT */}
                 {wallet.balance < 0 && (
                   <Typography variant="body2" color="error.main">
                     Outstanding balance
@@ -185,12 +185,18 @@ export default function WalletsPage() {
 
       {/* MENU */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-        <MenuItem>Edit Wallet</MenuItem>
-        <MenuItem>Delete Wallet</MenuItem>
+        <MenuItem onClick={handleEdit}>Edit Wallet</MenuItem>
+        <MenuItem sx={{ color: "error.main" }} onClick={handleDelete}>
+          Delete Wallet
+        </MenuItem>
       </Menu>
 
-      <AddWalletDialog open={openDialog} onClose={() => setOpenDialog(false)} />
-
+      {/* ADD / EDIT WALLET DIALOG */}
+      <AddWalletDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        editData={editData}
+      />
     </PageWrapper>
   );
 }

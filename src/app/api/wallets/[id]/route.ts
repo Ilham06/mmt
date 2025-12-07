@@ -1,71 +1,87 @@
-import { getAuthUser } from "@/libs/getAuthUser";
-import { prisma } from "@/libs/prisma";
 import { NextResponse } from "next/server";
+import { prisma } from "@/libs/prisma";
+import { getAuthUser } from "@/libs/getAuthUser";
 
-export async function GET(req: Request, { params }: any) {
-  const user = await getAuthUser(); // ← WAJIB AWAIT
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+  const user = await getAuthUser();
+  
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wallet = await prisma.wallet.findFirst({
-    where: { id: params.id, userId: user.id },
+    where: { id, userId: user.id },
+    include: {
+      transactions: {
+        orderBy: { date: "desc" },
+        take: 50,
+      },
+    },
   });
 
-  if (!wallet) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!wallet)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json(wallet);
 }
 
-export async function PUT(req: Request, { params }: any) {
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
   const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, type, isPrimary } = await req.json();
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!name || !type) {
-    return NextResponse.json({ error: "Name and type required" }, { status: 400 });
-  }
+  const { name, type, balance, isPrimary } = await req.json();
 
-  // If set primary, remove primary from others
+  // Cek apakah wallet milik user
+  const exists = await prisma.wallet.findFirst({
+    where: { id, userId: user.id },
+  });
+
+  if (!exists)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Jika ganti primary → nonaktifkan lainnya
   if (isPrimary) {
     await prisma.wallet.updateMany({
-      where: { userId: user.id },
+      where: { userId: user.id, isPrimary: true },
       data: { isPrimary: false },
     });
   }
 
-  const wallet = await prisma.wallet.updateMany({
-    where: { id: params.id, userId: user.id },
-    data: { name, type, isPrimary },
+  const updated = await prisma.wallet.update({
+    where: { id },
+    data: { name, type, balance: Number(balance), isPrimary },
   });
 
-  return NextResponse.json(wallet);
+  return NextResponse.json(updated);
 }
 
-export async function DELETE(req: Request, { params }: any) {
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
   const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Prevent deleting primary wallet unless explicitly allowed
-  const wallet = await prisma.wallet.findFirst({
-    where: { id: params.id, userId: user.id },
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const exists = await prisma.wallet.findFirst({
+    where: { id, userId: user.id },
   });
 
-  if (!wallet) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!exists)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Protect user from deleting the only wallet
-  const walletCount = await prisma.wallet.count({
-    where: { userId: user.id },
-  });
+  await prisma.wallet.delete({ where: { id } });
 
-  if (walletCount === 1) {
-    return NextResponse.json({ error: "Cannot delete last wallet" }, { status: 400 });
-  }
-
-  await prisma.wallet.delete({
-    where: { id: params.id },
-  });
-
-  return NextResponse.json({ message: "Deleted" });
+  return NextResponse.json({ message: "Wallet deleted" });
 }
-
-

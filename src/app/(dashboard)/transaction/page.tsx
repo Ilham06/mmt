@@ -2,7 +2,6 @@
 
 import {
   Box,
-  Button,
   Chip,
   Typography,
   TableBody,
@@ -28,175 +27,129 @@ import { useState } from 'react';
 import PageWrapper from '@/components/layouts/pageWrapper';
 import { MainTable } from '@/components/common/MainTable';
 import TransactionSummary from '@/components/ui/transaction/TransactionSummary';
+import {
+  useDeleteTransactionMutation,
+  useGetTransactionsQuery
+} from '@/redux/slices/transactionApi';
 
-// ======================= DUMMY TRANSACTIONS =======================
-const rows = [
-  {
-    id: '1',
-    title: 'Grocery – Indomaret',
-    category: 'Food',
-    wallet: 'Main Wallet',
-    type: 'EXPENSE',
-    amount: -150000,
-    date: '2025-11-12',
-  },
-  {
-    id: '2',
-    title: 'Salary November',
-    category: 'Salary',
-    wallet: 'BNI',
-    type: 'INCOME',
-    amount: 8500000,
-    date: '2025-11-10',
-  },
-  {
-    id: '3',
-    title: 'Grab Ride',
-    category: 'Transport',
-    wallet: 'OVO',
-    type: 'EXPENSE',
-    amount: -20000,
-    date: '2025-11-09',
-  },
-  {
-    id: '4',
-    title: 'Transfer to Savings',
-    category: 'Transfer',
-    wallet: 'Main Wallet → Jago',
-    type: 'TRANSFER',
-    amount: -2000000,
-    date: '2025-11-08',
-  },
-];
+import { useRouter } from 'next/navigation';
 
-// ======================= LABEL MAP =======================
-const typeLabelMap: any = {
-  INCOME: 'Income',
-  EXPENSE: 'Expense',
-  TRANSFER: 'Transfer',
-};
-
-// ======================= CUSTOM COLORS =======================
-const typeColors: any = {
-  INCOME: { bg: '#E8F5E9', text: '#2E7D32' },     // hijau
-  EXPENSE: { bg: '#FFEBEE', text: '#C62828' },    // merah
-  TRANSFER: { bg: '#E3F2FD', text: '#1565C0' },   // biru
-};
-
-// ======================= CATEGORY FILTER =======================
-const categories = Array.from(new Set(rows.map((r) => r.category)));
-const wallets = Array.from(new Set(rows.map((r) => r.wallet)));
 
 export default function TransactionsPage() {
-  const [tab, setTab] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [walletFilter, setWalletFilter] = useState('');
-  const [search, setSearch] = useState('');
+  const router = useRouter();
+
+  const [tab, setTab] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [walletFilter, setWalletFilter] = useState("");
+  const [search, setSearch] = useState("");
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [activeRow, setActiveRow] = useState<string | null>(null);
 
+  // --------------------- FETCH DATA ---------------------
+  const { data, isLoading } = useGetTransactionsQuery({
+    type: tab !== "all" ? tab : undefined,
+    category: categoryFilter || undefined,
+    wallet: walletFilter || undefined,
+    search: search || undefined,
+  });
+
+  const [deleteTransaction] = useDeleteTransactionMutation();
+  const rows = data ?? [];
+  const categories = data?.filters?.categories ?? [];
+  const wallets = data?.filters?.wallets ?? [];
+
+  // --------------------- MENU ---------------------
   const handleMenuOpen = (event: any, id: string) => {
     setActiveRow(id);
     setAnchorEl(event.currentTarget);
   };
+
   const handleMenuClose = () => {
     setActiveRow(null);
     setAnchorEl(null);
   };
 
-  // ======================= FILTERING =======================
-  const filteredRows = rows.filter((r) => {
-    const tabMatch = tab === 'all' || r.type === tab;
-    const categoryMatch = categoryFilter ? r.category === categoryFilter : true;
-    const walletMatch = walletFilter ? r.wallet === walletFilter : true;
-    const searchMatch =
-      !search ||
-      r.title.toLowerCase().includes(search.toLowerCase()) ||
-      r.category.toLowerCase().includes(search.toLowerCase()) ||
-      r.wallet.toLowerCase().includes(search.toLowerCase());
+  // --------------------- DELETE ---------------------
+  const handleDelete = async () => {
+    if (!activeRow) return;
 
-    return tabMatch && categoryMatch && walletMatch && searchMatch;
-  });
+    await deleteTransaction(activeRow).unwrap();
+    handleMenuClose();
+  };
+
+  // --------------------- EDIT ---------------------
+  const handleEdit = () => {
+    if (!activeRow) return;
+    router.push(`/transaction/${activeRow}/edit`);
+  };
+
+
+  const typeColors: any = {
+    INCOME: { bg: '#E8F5E9', text: '#2E7D32' },
+    EXPENSE: { bg: '#FFEBEE', text: '#C62828' },
+    TRANSFER_IN: { bg: '#E3F2FD', text: '#1565C0' },
+    TRANSFER_OUT: { bg: '#E3F2FD', text: '#1565C0' },
+  };
 
   return (
     <PageWrapper
       title="Transactions"
       actions={{
         label: 'Add Transaction',
-        href: '/transaction/create', // nanti diganti form
+        href: '/transaction/create',
         icon: <Add />,
       }}
     >
-        {/* SUMMARY */}
-      <Grid size={12}>
+      {/* SUMMARY */}
+      <Grid size={{ xs: 12 }}>
         <TransactionSummary />
       </Grid>
 
-      {/* ======================= FILTER CARD ======================= */}
-      <Box
-        sx={{
-          borderRadius: 3,
-          my: 2,
-          bgcolor: 'background.paper',
-          boxShadow: 'var(--mui-shadow)',
-        }}
-      >
-
+      {/* FILTER CARD */}
+      <Box sx={{ borderRadius: 3, my: 2, bgcolor: "background.paper", boxShadow: "var(--mui-shadow)" }}>
         <Box p={2}>
-          {/* TABS */}
-          <Tabs
-            value={tab}
-            onChange={(e, v) => setTab(v)}
-            sx={{ mb: 2, '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 } }}
-          >
+          <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
             <Tab label="All" value="all" />
             <Tab label="Income" value="INCOME" />
             <Tab label="Expense" value="EXPENSE" />
-            <Tab label="Transfer" value="TRANSFER" />
+            <Tab label="Transfers" value="TRANSFER" />
           </Tabs>
 
-          {/* FILTER BAR (Category, Wallet, Search) */}
-          <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-            {/* Category Filter */}
+          <Box display="flex" gap={2} flexWrap="wrap">
+            {/* CATEGORY */}
             <FormControl size="small" sx={{ width: 180 }}>
               <Select
                 displayEmpty
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                renderValue={(selected) => selected || 'Category'}
-                sx={{ borderRadius: 2 }}
               >
-                {categories.map((c) => (
-                  <MenuItem key={c} value={c}>
-                    {c}
-                  </MenuItem>
+                <MenuItem value="">All Categories</MenuItem>
+                {categories.map((c: string) => (
+                  <MenuItem key={c} value={c}>{c}</MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            {/* Wallet Filter */}
+            {/* WALLET */}
             <FormControl size="small" sx={{ width: 180 }}>
               <Select
                 displayEmpty
                 value={walletFilter}
                 onChange={(e) => setWalletFilter(e.target.value)}
-                renderValue={(selected) => selected || 'Wallet'}
-                sx={{ borderRadius: 2 }}
               >
-                {wallets.map((w) => (
-                  <MenuItem key={w} value={w}>
-                    {w}
-                  </MenuItem>
+                <MenuItem value="">All Wallets</MenuItem>
+                {wallets.map((w: string) => (
+                  <MenuItem key={w} value={w}>{w}</MenuItem>
                 ))}
               </Select>
             </FormControl>
 
             {/* SEARCH */}
             <TextField
-              placeholder="Search transaction…"
+              placeholder="Search…"
               size="small"
-              sx={{ flex: 1, borderRadius: 2 }}
+              sx={{ flex: 1 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               InputProps={{
@@ -210,79 +163,71 @@ export default function TransactionsPage() {
           </Box>
         </Box>
 
-        {/* ======================= TABLE ======================= */}
+        {/* TABLE */}
         <MainTable
           header={['Title', 'Category', 'Wallet', 'Type', 'Amount', 'Date', 'Actions']}
           hasPagination
-          rowsCount={filteredRows.length}
+          rowsCount={rows.length}
           page={0}
-          pageSize={5}
+          pageSize={10}
         >
           <TableBody>
-            {filteredRows.map((row) => (
-              <TableRow
-                key={row.id}
-                hover
-                sx={{
-                  cursor: 'pointer',
-                  '&:hover td': { backgroundColor: 'rgba(145,158,171,0.04)' },
-                }}
-              >
-                {/* TITLE */}
-                <TableCell sx={{ fontWeight: 600 }}>{row.title}</TableCell>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={7}>Loading…</TableCell></TableRow>
+            ) : rows.length === 0 ? (
+              <TableRow><TableCell colSpan={7}>No transactions found</TableCell></TableRow>
+            ) : (
+              rows.map((row: any) => (
+                <TableRow key={row.id} hover>
+                  <TableCell sx={{ fontWeight: 600 }}>{row.title}</TableCell>
+                  <TableCell>{row.category?.name}</TableCell>
+                  <TableCell>{row.wallet?.name}</TableCell>
 
-                {/* CATEGORY */}
-                <TableCell>{row.category}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row.type}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        borderRadius: 1,
+                        bgcolor: typeColors[row.type]?.bg,
+                        color: typeColors[row.type]?.text,
+                      }}
+                    />
+                  </TableCell>
 
-                {/* WALLET */}
-                <TableCell>{row.wallet}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>
+                    {row.amount < 0 ? (
+                      <span style={{ color: '#C62828' }}>
+                        - Rp {Math.abs(row.amount).toLocaleString('id-ID')}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#2E7D32' }}>
+                        + Rp {row.amount.toLocaleString('id-ID')}
+                      </span>
+                    )}
+                  </TableCell>
 
-                {/* TYPE */}
-                <TableCell>
-                  <Chip
-                    label={typeLabelMap[row.type]}
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      borderRadius: 1,
-                      bgcolor: typeColors[row.type]?.bg,
-                      color: typeColors[row.type]?.text,
-                    }}
-                  />
-                </TableCell>
+                  <TableCell>{new Date(row.date).toLocaleDateString("id-ID")}</TableCell>
 
-                {/* AMOUNT */}
-                <TableCell sx={{ fontWeight: 700 }}>
-                  {row.amount < 0 ? (
-                    <span style={{ color: '#C62828' }}>- Rp {Math.abs(row.amount).toLocaleString('id-ID')}</span>
-                  ) : (
-                    <span style={{ color: '#2E7D32' }}>+ Rp {row.amount.toLocaleString('id-ID')}</span>
-                  )}
-                </TableCell>
-
-                {/* DATE */}
-                <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {row.date}
-                  </Typography>
-                </TableCell>
-
-                {/* ACTIONS */}
-                <TableCell align="right">
-                  <IconButton size="small" onClick={(e) => handleMenuOpen(e, row.id)}>
-                    <MoreVertIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell align="right">
+                    <IconButton size="small" onClick={(e) => handleMenuOpen(e, row.id)}>
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </MainTable>
       </Box>
 
-      {/* ======================= MENU ======================= */}
+      {/* MENU */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Delete</MenuItem>
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+          Delete
+        </MenuItem>
       </Menu>
     </PageWrapper>
   );

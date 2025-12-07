@@ -20,40 +20,52 @@ export async function GET(req: Request, { params }: any) {
 
 // ================= UPDATE CATEGORY =================
 
-export async function PUT(req: Request, { params }: any) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params; // ⬅ FIX TERPENTING
+  
   const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { name, type, icon, color } = await req.json();
 
-  const updated = await prisma.category.updateMany({
-    where: { id: params.id, userId: user.id },
+  // Cek ownership
+  const exists = await prisma.category.findFirst({
+    where: { id, userId: user.id },
+  });
+
+  if (!exists)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Update
+  const updated = await prisma.category.update({
+    where: { id },
     data: { name, type, icon, color },
   });
 
-  if (updated.count === 0)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  return NextResponse.json({ message: "Updated" });
+  return NextResponse.json(updated);
 }
+
+
 
 // ================= DELETE CATEGORY =================
 
-export async function DELETE(req: Request, { params }: any) {
+export async function DELETE(req: Request,  context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params; 
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // Cegah delete jika masih dipakai
   const usedInTransactions = await prisma.transaction.count({
-    where: { categoryId: params.id, wallet: { userId: user.id } }
+    where: { categoryId: id, wallet: { userId: user.id } }
   });
 
   const usedInBudget = await prisma.budget.count({
-    where: { categoryId: params.id }
+    where: { categoryId: id }
   });
 
   const usedInRecurring = await prisma.recurringTransaction.count({
-    where: { categoryId: params.id }
+    where: { categoryId: id }
   });
 
   if (usedInTransactions + usedInBudget + usedInRecurring > 0) {
@@ -64,7 +76,7 @@ export async function DELETE(req: Request, { params }: any) {
   }
 
   await prisma.category.delete({
-    where: { id: params.id },
+    where: { id: id },
   });
 
   return NextResponse.json({ message: "Deleted" });

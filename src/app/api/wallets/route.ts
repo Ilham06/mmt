@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/libs/prisma";
 import { getAuthUser } from "@/libs/getAuthUser";
 
+// ===========================
+// GET ALL WALLETS
+// ===========================
 export async function GET() {
-  const user = await getAuthUser(); // ← WAJIB AWAIT
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wallets = await prisma.wallet.findMany({
     where: { userId: user.id },
@@ -14,20 +18,20 @@ export async function GET() {
   return NextResponse.json(wallets);
 }
 
+// ===========================
+// CREATE WALLET
+// ===========================
 export async function POST(req: Request) {
-  const user = await getAuthUser(); // ← WAJIB AWAIT
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, type, isPrimary } = await req.json();
+  const { name, type, balance, isPrimary } = await req.json();
 
-  if (!name || !type) {
-    return NextResponse.json({ error: "Name and type required" }, { status: 400 });
-  }
-
-  // If new primary wallet is created → unset old ones
+  // Jika user membuat wallet primary baru → nonaktifkan primary lama
   if (isPrimary) {
     await prisma.wallet.updateMany({
-      where: { userId: user.id },
+      where: { userId: user.id, isPrimary: true },
       data: { isPrimary: false },
     });
   }
@@ -36,8 +40,9 @@ export async function POST(req: Request) {
     data: {
       name,
       type,
+      balance: Number(balance) ?? 0,
       isPrimary: !!isPrimary,
-      userId: user.id, // ← userId VALID
+      userId: user.id,
     },
   });
 

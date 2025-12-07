@@ -1,28 +1,39 @@
 "use client";
 
-import { colorSet, iconSet } from "@/config/categories";
+import { useEffect, useState } from "react";
 import {
-  Avatar,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Fade,
   Grid,
   IconButton,
   MenuItem,
   Stack,
   TextField,
   Typography,
-  Fade,
   Divider,
 } from "@mui/material";
 
-import { useState } from "react";
+import { iconSet, colorSet } from "@/config/categories";
 
+import {
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+} from "@/redux/slices/categoryApi";
 
-export default function AddCategoryDialog({ open, onClose }: any) {
+export default function AddCategoryDialog({
+  open,
+  onClose,
+  category, // jika ada → edit mode
+}: {
+  open: boolean;
+  onClose: () => void;
+  category?: any;
+}) {
   const [form, setForm] = useState({
     name: "",
     type: "EXPENSE",
@@ -30,11 +41,46 @@ export default function AddCategoryDialog({ open, onClose }: any) {
     color: "",
   });
 
+  const [createCategory, { isLoading: creating }] = useCreateCategoryMutation();
+  const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation();
+
+  const isEdit = Boolean(category);
+
+  useEffect(() => {
+    if (category) {
+      setForm({
+        name: category.name,
+        type: category.type,
+        icon: category.icon,
+        color: category.color,
+      });
+    } else {
+      setForm({
+        name: "",
+        type: "EXPENSE",
+        icon: "",
+        color: "",
+      });
+    }
+  }, [category, open]);
+
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const selectedIcon = iconSet.find((i) => i.label === form.icon);
+  const handleSubmit = async () => {
+    try {
+      if (isEdit) {
+        await updateCategory({ id: category.id, ...form }).unwrap();
+      } else {
+        await createCategory(form).unwrap();
+      }
+
+      onClose();
+    } catch (err) {
+      console.error("ERROR:", err);
+    }
+  };
 
   return (
     <Dialog
@@ -44,9 +90,14 @@ export default function AddCategoryDialog({ open, onClose }: any) {
       fullWidth
       TransitionComponent={Fade}
     >
-      <DialogTitle sx={{ pb: 1 }}>Add New Category</DialogTitle>
+      <DialogTitle sx={{ pb: 1 }}>
+        {isEdit ? "Edit Category" : "Add New Category"}
+      </DialogTitle>
+
       <Typography px={3} pb={2} color="text.secondary">
-        Used to classify transactions
+        {isEdit
+          ? "Update category information"
+          : "Used to classify transactions"}
       </Typography>
 
       <Divider />
@@ -78,7 +129,6 @@ export default function AddCategoryDialog({ open, onClose }: any) {
             <Typography mb={1} fontWeight={600}>
               Choose Icon
             </Typography>
-
             <Grid container spacing={1.5}>
               {iconSet.map((item) => (
                 <Grid key={item.label} size={{ xs: 2 }}>
@@ -106,11 +156,10 @@ export default function AddCategoryDialog({ open, onClose }: any) {
             <Typography mb={1} fontWeight={600}>
               Choose Color
             </Typography>
-
             <Grid container spacing={1.5}>
               {colorSet.map((clr) => (
-                <Box
-                key={clr}
+                <Grid key={clr} size={{ xs: 2 }}>
+                  <Box
                     onClick={() => handleChange("color", clr)}
                     sx={{
                       width: 32,
@@ -124,6 +173,7 @@ export default function AddCategoryDialog({ open, onClose }: any) {
                           : "2px solid white",
                     }}
                   />
+                </Grid>
               ))}
             </Grid>
           </Box>
@@ -134,12 +184,18 @@ export default function AddCategoryDialog({ open, onClose }: any) {
         <Button sx={{ textTransform: "none" }} onClick={onClose}>
           Cancel
         </Button>
+
         <Button
           variant="contained"
           sx={{ borderRadius: 2, px: 4 }}
           disabled={!form.name || !form.icon || !form.color}
+          onClick={handleSubmit}
         >
-          Save
+          {creating || updating
+            ? "Saving..."
+            : isEdit
+            ? "Update"
+            : "Save"}
         </Button>
       </DialogActions>
     </Dialog>
