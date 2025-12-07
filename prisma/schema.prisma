@@ -49,6 +49,13 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relations
+  wallets              Wallet[]
+  categories           Category[]
+  transactions         Transaction[]
+  budgets              Budget[]
+  recurringTransactions RecurringTransaction[]
 }
 
 // ============================================================
@@ -57,6 +64,9 @@ model User {
 
 model Category {
   id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+
   name      String
   type      CategoryType
   icon      String
@@ -76,6 +86,9 @@ model Category {
 
 model Wallet {
   id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+
   name      String
   type      WalletType
   balance   Int          @default(0)
@@ -96,6 +109,9 @@ model Wallet {
 
 model Transaction {
   id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+
   title     String
   amount    Int
   type      TransactionType
@@ -106,11 +122,11 @@ model Transaction {
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id])
 
-  // Wallet
+  // Main wallet
   walletId   String?
   wallet     Wallet?   @relation("WalletTransactions", fields: [walletId], references: [id])
 
-  // Transfer
+  // Transfer relations
   fromWalletId String?
   fromWallet   Wallet? @relation("TransferOut", fields: [fromWalletId], references: [id])
 
@@ -120,6 +136,7 @@ model Transaction {
   // Receipt
   receiptUrl String?
 
+  // Attachments
   attachments Attachment[]
 
   createdAt DateTime @default(now())
@@ -132,6 +149,9 @@ model Transaction {
 
 model Budget {
   id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+
   limit     Int
   period    String
 
@@ -139,10 +159,10 @@ model Budget {
   endDate   DateTime?
 
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category   @relation(fields: [categoryId], references: [id])
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 // ============================================================
@@ -151,6 +171,9 @@ model Budget {
 
 model RecurringTransaction {
   id        String             @id @default(uuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+
   title     String
   amount    Int
   type      TransactionType
