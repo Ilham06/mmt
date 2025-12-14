@@ -2,44 +2,60 @@
 
 import { MainTable } from "@/components/common/MainTable";
 import { TableBody, TableRow, TableCell, Typography } from "@mui/material";
+import { useGetTransactionsQuery } from "@/redux/slices/transactionApi";
 
 export default function RecentTransactionTable() {
-  const rows = [
-    { date: "2025-01-01", title: "Grocery", amount: -150000 },
-    { date: "2025-01-02", title: "Salary", amount: 8500000 },
-    { date: "2025-01-03", title: "Grab", amount: -20000 },
-  ];
+  const { data, isLoading } = useGetTransactionsQuery({
+    limit: 5,
+  });
+
+  const rows = data ?? [];
 
   return (
     <MainTable header={["Date", "Title", "Amount"]}>
       <TableBody>
-        {rows.map((row, index) => (
-          <TableRow key={index} hover>
-            {/* DATE */}
-            <TableCell>
-              <Typography>{row.date}</Typography>
-            </TableCell>
-
-            {/* TITLE */}
-            <TableCell>
-              <Typography fontWeight={500}>{row.title}</Typography>
-            </TableCell>
-
-            {/* AMOUNT */}
-            <TableCell align="right">
-              <Typography
-                sx={{
-                  fontWeight: 600,
-                  color: row.amount < 0 ? "error.main" : "success.main",
-                }}
-              >
-                {row.amount < 0
-                  ? `- Rp ${Math.abs(row.amount).toLocaleString("id-ID")}`
-                  : `+ Rp ${row.amount.toLocaleString("id-ID")}`}
-              </Typography>
-            </TableCell>
+        {isLoading ? (
+          <TableRow>
+            <TableCell colSpan={3}>Loading…</TableCell>
           </TableRow>
-        ))}
+        ) : rows.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={3}>No transactions</TableCell>
+          </TableRow>
+        ) : (
+          rows.map((row: any) => (
+            <TableRow key={row.id} hover>
+              {/* DATE */}
+              <TableCell>
+                <Typography>
+                  {new Date(row.date).toLocaleDateString("id-ID")}
+                </Typography>
+              </TableCell>
+
+              {/* TITLE */}
+              <TableCell>
+                <Typography fontWeight={500}>{row.title}</Typography>
+              </TableCell>
+
+              {/* AMOUNT */}
+              <TableCell align="right">
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    color:
+                      row.type === "EXPENSE"
+                        ? "error.main"
+                        : "success.main",
+                  }}
+                >
+                  {row.type === "EXPENSE"
+                    ? `- Rp ${Math.abs(row.amount).toLocaleString("id-ID")}`
+                    : `+ Rp ${row.amount.toLocaleString("id-ID")}`}
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
       </TableBody>
     </MainTable>
   );

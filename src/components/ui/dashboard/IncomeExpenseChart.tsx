@@ -2,10 +2,15 @@
 
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Card, CardContent, Typography } from "@mui/material";
-
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+import { useGetTransactionStatsQuery } from "@/redux/slices/transactionApi";
 
 export default function IncomeExpenseChart() {
+  const { data, isLoading } = useGetTransactionStatsQuery({});
+
+  // fallback aman
+  const income = data?.totalIncome ?? 0;
+  const expense = data?.totalExpense ?? 0;
+
   return (
     <Card elevation={0} sx={{ p: 2, borderRadius: 3, border: "1px solid #eee" }}>
       <CardContent>
@@ -15,19 +20,25 @@ export default function IncomeExpenseChart() {
 
         <LineChart
           height={300}
-          xAxis={[{ scaleType: "band", data: months }]}
-          series={[
+          xAxis={[
             {
-              data: [500, 1200, 900, 1400, 1800, 2200],
-              color: "#4CAF50",
-              label: "Income",
-            },
-            {
-              data: [400, 800, 1100, 900, 1500, 1700],
-              color: "#F44336",
-              label: "Expense",
+              scaleType: "band",
+              data: ["Total"], // sementara 1 titik
             },
           ]}
+          series={[
+            {
+              label: "Income",
+              data: [income],
+              color: "#4CAF50",
+            },
+            {
+              label: "Expense",
+              data: [expense],
+              color: "#F44336",
+            },
+          ]}
+          loading={isLoading}
         />
       </CardContent>
     </Card>
