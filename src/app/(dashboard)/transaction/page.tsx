@@ -23,16 +23,19 @@ import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Add } from '@mui/icons-material';
 
-import { useState } from 'react';
+import { Key, useState } from 'react';
 import PageWrapper from '@/components/layouts/pageWrapper';
 import { MainTable } from '@/components/common/MainTable';
 import TransactionSummary from '@/components/ui/transaction/TransactionSummary';
 import {
   useDeleteTransactionMutation,
-  useGetTransactionsQuery
+  useGetTransactionsQuery,
+  useGetTransactionStatsQuery
 } from '@/redux/slices/transactionApi';
 
 import { useRouter } from 'next/navigation';
+import { useGetWalletsQuery } from '@/redux/slices/walletApi';
+import { useGetCategoriesQuery } from '@/redux/slices/categoryApi';
 
 
 export default function TransactionsPage() {
@@ -51,13 +54,22 @@ export default function TransactionsPage() {
     type: tab !== "all" ? tab : undefined,
     category: categoryFilter || undefined,
     wallet: walletFilter || undefined,
-    search: search || undefined,
+    q: search || undefined,
+  }, {
+    refetchOnMountOrArgChange: true
   });
+
+  const { data: wallets = [] } = useGetWalletsQuery()
+  const { data: categories = [] } = useGetCategoriesQuery()
 
   const [deleteTransaction] = useDeleteTransactionMutation();
   const rows = data ?? [];
-  const categories = data?.filters?.categories ?? [];
-  const wallets = data?.filters?.wallets ?? [];
+
+  const { data: stats } = useGetTransactionStatsQuery({
+    wallet: walletFilter || undefined,
+    category: categoryFilter || undefined,
+  });
+
 
   // --------------------- MENU ---------------------
   const handleMenuOpen = (event: any, id: string) => {
@@ -81,7 +93,7 @@ export default function TransactionsPage() {
   // --------------------- EDIT ---------------------
   const handleEdit = () => {
     if (!activeRow) return;
-    router.push(`/transaction/${activeRow}/edit`);
+    router.push(`/transaction/${activeRow}`);
   };
 
 
@@ -103,7 +115,7 @@ export default function TransactionsPage() {
     >
       {/* SUMMARY */}
       <Grid size={{ xs: 12 }}>
-        <TransactionSummary />
+        <TransactionSummary stats={stats} />
       </Grid>
 
       {/* FILTER CARD */}
@@ -125,8 +137,8 @@ export default function TransactionsPage() {
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
                 <MenuItem value="">All Categories</MenuItem>
-                {categories.map((c: string) => (
-                  <MenuItem key={c} value={c}>{c}</MenuItem>
+                {categories.map((category: any) => (
+                  <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -139,8 +151,8 @@ export default function TransactionsPage() {
                 onChange={(e) => setWalletFilter(e.target.value)}
               >
                 <MenuItem value="">All Wallets</MenuItem>
-                {wallets.map((w: string) => (
-                  <MenuItem key={w} value={w}>{w}</MenuItem>
+                {wallets.map((wallet: any) => (
+                  <MenuItem key={wallet.id} value={wallet.id}>{wallet.name}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -197,7 +209,7 @@ export default function TransactionsPage() {
                   </TableCell>
 
                   <TableCell sx={{ fontWeight: 700 }}>
-                    {row.amount < 0 ? (
+                    {row.type == 'EXPENSE' ? (
                       <span style={{ color: '#C62828' }}>
                         - Rp {Math.abs(row.amount).toLocaleString('id-ID')}
                       </span>

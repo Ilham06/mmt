@@ -22,7 +22,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import NotesIcon from '@mui/icons-material/Notes';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import {
   useCreateTransactionMutation,
@@ -42,17 +42,19 @@ const typeOptions = [
   { value: 'TRANSFER', label: 'Transfer' },
 ];
 
-export default function TransactionFormPage({ params }: any) {
-  const id = params?.id;
-  const isEdit = Boolean(id);
-
+export default function TransactionFormPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
+  const {id} = params
+  
+  const isEdit = Boolean(id);
 
   const [createTransaction] = useCreateTransactionMutation();
   const [updateTransaction] = useUpdateTransactionMutation();
   const [deleteTransaction] = useDeleteTransactionMutation();
 
-  const { data: detail } = useGetTransactionByIdQuery(id!, { skip: !isEdit });
+  const { data: detail } = useGetTransactionByIdQuery(id!, { skip: !isEdit, refetchOnMountOrArgChange:true });
+  console.log(detail)
   const { data: categories = [] } = useGetCategoriesQuery();
   const { data: wallets = [] } = useGetWalletsQuery();
 
@@ -116,7 +118,7 @@ export default function TransactionFormPage({ params }: any) {
       } else {
         await createTransaction(payload).unwrap();
       }
-      router.push('/transactions');
+      router.push('/transaction');
     } catch (err: any) {
       setError(err.data?.error || 'Gagal menyimpan transaksi.');
     }

@@ -44,6 +44,29 @@ export const transactionApi = createApi({
       }),
       invalidatesTags: ["Transaction", "Wallet"],
     }),
+
+    getTransactionStats: builder.query<
+      {
+        totalIncome: number;
+        totalExpense: number;
+        totalTransfer: number;
+        incomeCount: number;
+        expenseCount: number;
+        transferCount: number;
+        count: number;
+      },
+      {
+        wallet?: string;
+        category?: string;
+        startDate?: string;
+        endDate?: string;
+      }
+    >({
+      query: (params) => ({
+        url: "transactions/stats", // ← SESUAI ENDPOINT KAMU
+        params,
+      }),
+    }),
   }),
 });
 
@@ -53,4 +76,5 @@ export const {
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
+  useGetTransactionStatsQuery
 } = transactionApi;

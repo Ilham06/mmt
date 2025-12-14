@@ -8,8 +8,8 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
 
-  const walletId = searchParams.get("walletId") || undefined;
-  const categoryId = searchParams.get("categoryId") || undefined;
+  const walletId = searchParams.get("wallet") || undefined;
+  const categoryId = searchParams.get("category") || undefined;
 
   const typeParam = searchParams.get("type");
   const type = typeParam && ["INCOME", "EXPENSE", "TRANSFER_IN", "TRANSFER_OUT"].includes(typeParam)
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       newTx = await tx.transaction.create({
         data: {
           title,
-          amount: -Math.abs(amount),
+          amount: Math.abs(amount),
           type,
           date: new Date(date),
           note,
