@@ -20,6 +20,7 @@
     "bcryptjs": "^3.0.3",
     "dayjs": "^1.11.19",
     "formik": "^2.4.9",
+    "framer-motion": "^12.23.26",
     "jsonwebtoken": "^9.0.3",
     "next": "16.0.5",
     "pg": "^8.16.3",

@@ -39,6 +39,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
+import { useXPGainQueue } from "@/hooks/useXpGainToast";
+import XPGainToast from "@/components/game/XpGainToast";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -93,6 +95,8 @@ export default function TransactionsPage() {
     router.push(`/transaction/${activeRow}`);
   };
 
+  // const xpToast = useXPGainQueue();
+  // xpToast.showXP(100);
   const typeMeta: any = {
     INCOME: { label: "⬆️ Buff", bg: "#E8F5E9", color: "#2E7D32" },
     EXPENSE: { label: "⬇️ Damage", bg: "#FFEBEE", color: "#C62828" },
@@ -109,6 +113,8 @@ export default function TransactionsPage() {
         icon: <FlashOnRoundedIcon />,
       }}
     >
+      <XPGainToast xp={200} visible={true} />
+
       {/* ===== SUMMARY ===== */}
       <Grid container spacing={2} mb={3}>
         <Grid size={{ xs: 12 }}>
@@ -260,9 +266,7 @@ export default function TransactionsPage() {
                       <Typography
                         fontWeight={700}
                         color={
-                          row.type === "EXPENSE"
-                            ? "error.main"
-                            : "success.main"
+                          row.type === "EXPENSE" ? "error.main" : "success.main"
                         }
                       >
                         {row.type === "EXPENSE" ? "-" : "+"} Rp{" "}
@@ -292,7 +296,11 @@ export default function TransactionsPage() {
       </Box>
 
       {/* MENU */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
         <MenuItem onClick={handleEdit}>Edit Aksi ✏️</MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
           Hapus Aksi ❌

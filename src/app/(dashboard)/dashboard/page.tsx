@@ -24,9 +24,12 @@ import CategoryPieChart from "@/components/ui/dashboard/ExpenseByCategory";
 import RecentTransactionTable from "@/components/ui/dashboard/RecentTransactionTable";
 
 import { useGetTransactionStatsQuery } from "@/redux/slices/transactionApi";
+import QuestCard from "@/components/game/QuestCard";
+import { useQuestProgress } from "@/hooks/useQuestProgress";
 
 export default function DashboardPage() {
   const { data, isLoading } = useGetTransactionStatsQuery({});
+  const { quests, completeQuest } = useQuestProgress();
 
   // ================= MOCK PLAYER STATE =================
   const player = {
@@ -44,6 +47,7 @@ export default function DashboardPage() {
 
   return (
     <PageWrapper title="Game Hub">
+      
       <Grid container spacing={3}>
         {/* ================= HERO PLAYER ================= */}
         <Grid size={{ xs: 12 }}>
@@ -226,6 +230,20 @@ export default function DashboardPage() {
               </Button>
             </Stack>
           </Card>
+        </Grid>
+
+        <Grid size={{xs: 12}}>
+          {quests.map((q) => (
+  <QuestCard
+    key={q.id}
+    title={q.title}
+    description={q.description}
+    progress={q.progress}
+    rewardXP={q.rewardXP}
+    completed={q.completed}
+    onComplete={() => completeQuest(q.id)}
+  />
+))}
         </Grid>
 
         {/* ================= WORLD STATS ================= */}

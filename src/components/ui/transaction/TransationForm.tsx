@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Box,
@@ -16,50 +16,78 @@ import {
   DialogContent,
   DialogActions,
   Chip,
-} from '@mui/material';
+} from "@mui/material";
 
-import PaidIcon from '@mui/icons-material/Paid';
-import CategoryIcon from '@mui/icons-material/Category';
-import NotesIcon from '@mui/icons-material/Notes';
-import TrendingUpRounded from '@mui/icons-material/TrendingUpRounded';
-import TrendingDownRounded from '@mui/icons-material/TrendingDownRounded';
-import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
+import PaidIcon from "@mui/icons-material/Paid";
+import CategoryIcon from "@mui/icons-material/Category";
+import NotesIcon from "@mui/icons-material/Notes";
+import TrendingUpRounded from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownRounded from "@mui/icons-material/TrendingDownRounded";
+import SwapHorizRounded from "@mui/icons-material/SwapHorizRounded";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 import {
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
   useGetTransactionByIdQuery,
-} from '@/redux/slices/transactionApi';
+} from "@/redux/slices/transactionApi";
 
-import { useGetCategoriesQuery } from '@/redux/slices/categoryApi';
-import { useGetWalletsQuery } from '@/redux/slices/walletApi';
-import PageWrapper from '@/components/layouts/pageWrapper';
+import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
+import { useGetWalletsQuery } from "@/redux/slices/walletApi";
+import PageWrapper from "@/components/layouts/pageWrapper";
 
 // ======================= OPTIONS =======================
 const typeOptions = [
   {
-    value: 'INCOME',
-    label: 'Masuk',
+    value: "INCOME",
+    label: "Masuk",
     icon: <TrendingUpRounded />,
-    color: 'success',
+    color: "success",
   },
   {
-    value: 'EXPENSE',
-    label: 'Keluar',
+    value: "EXPENSE",
+    label: "Keluar",
     icon: <TrendingDownRounded />,
-    color: 'error',
+    color: "error",
   },
   {
-    value: 'TRANSFER',
-    label: 'Transfer',
+    value: "TRANSFER",
+    label: "Transfer",
     icon: <SwapHorizRounded />,
-    color: 'primary',
+    color: "primary",
   },
 ];
+
+// ======================= SMART REACTION =======================
+const getSmartReaction = ({
+  amount,
+  type,
+}: {
+  amount: number;
+  type: string;
+}) => {
+  if (!amount) return null;
+
+  if (type === "EXPENSE") {
+    if (amount >= 1_000_000) return "😬 Wah, gede juga pengeluarannya…";
+    if (amount >= 300_000) return "🤔 Lumayan nih, masih aman?";
+    return "👌 Oke, masih wajar";
+  }
+
+  if (type === "INCOME") {
+    if (amount >= 5_000_000) return "🎉 Gajian besar nih, mantap!";
+    return "💰 Income masuk!";
+  }
+
+  if (type === "TRANSFER") {
+    return "🔁 Pindah dompet, aman~";
+  }
+
+  return null;
+};
 
 export default function TransactionFormPage() {
   const router = useRouter();
@@ -79,18 +107,18 @@ export default function TransactionFormPage() {
   const { data: categories = [] } = useGetCategoriesQuery();
   const { data: wallets = [] } = useGetWalletsQuery();
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [form, setForm] = useState({
-    title: '',
-    amount: '',
-    type: 'EXPENSE',
-    categoryId: '',
-    walletId: '',
-    toWalletId: '',
-    date: '',
-    notes: '',
+    title: "",
+    amount: "",
+    type: "EXPENSE",
+    categoryId: "",
+    walletId: "",
+    toWalletId: "",
+    date: "",
+    notes: "",
   });
 
   // ======================= PREFILL =======================
@@ -100,11 +128,11 @@ export default function TransactionFormPage() {
         title: detail.title,
         amount: detail.amount.toString(),
         type: detail.type,
-        categoryId: detail.categoryId || '',
-        walletId: detail.walletId || detail.fromWalletId || '',
-        toWalletId: detail.toWalletId || '',
-        date: detail.date.split('T')[0],
-        notes: detail.note || '',
+        categoryId: detail.categoryId || "",
+        walletId: detail.walletId || detail.fromWalletId || "",
+        toWalletId: detail.toWalletId || "",
+        date: detail.date.split("T")[0],
+        notes: detail.note || "",
       });
     }
   }, [detail, isEdit]);
@@ -113,12 +141,18 @@ export default function TransactionFormPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // ======================= SMART REACTION VALUE =======================
+  const smartReaction = getSmartReaction({
+    amount: Number(form.amount),
+    type: form.type,
+  });
+
   // ======================= SUBMIT =======================
   const handleSubmit = async () => {
-    setError('');
+    setError("");
 
     if (!form.title || !form.amount || !form.date) {
-      return setError('Judul, jumlah, dan tanggal wajib diisi ya 😅');
+      return setError("Judul, jumlah, dan tanggal wajib diisi ya 😅");
     }
 
     const payload: any = {
@@ -127,10 +161,10 @@ export default function TransactionFormPage() {
       type: form.type,
       date: form.date,
       note: form.notes || undefined,
-      categoryId: form.type !== 'TRANSFER' ? form.categoryId : null,
-      walletId: form.type !== 'TRANSFER' ? form.walletId : null,
-      fromWalletId: form.type === 'TRANSFER' ? form.walletId : null,
-      toWalletId: form.type === 'TRANSFER' ? form.toWalletId : null,
+      categoryId: form.type !== "TRANSFER" ? form.categoryId : null,
+      walletId: form.type !== "TRANSFER" ? form.walletId : null,
+      fromWalletId: form.type === "TRANSFER" ? form.walletId : null,
+      toWalletId: form.type === "TRANSFER" ? form.toWalletId : null,
     };
 
     try {
@@ -139,9 +173,9 @@ export default function TransactionFormPage() {
       } else {
         await createTransaction(payload).unwrap();
       }
-      router.push('/transactions');
+      router.push("/transactions");
     } catch (err: any) {
-      setError(err.data?.error || 'Gagal menyimpan transaksi 😭');
+      setError(err.data?.error || "Gagal menyimpan transaksi 😭");
     }
   };
 
@@ -149,25 +183,25 @@ export default function TransactionFormPage() {
   const handleReset = () => {
     if (!isEdit) {
       setForm({
-        title: '',
-        amount: '',
-        type: 'EXPENSE',
-        categoryId: '',
-        walletId: '',
-        toWalletId: '',
-        date: '',
-        notes: '',
+        title: "",
+        amount: "",
+        type: "EXPENSE",
+        categoryId: "",
+        walletId: "",
+        toWalletId: "",
+        date: "",
+        notes: "",
       });
     } else if (detail) {
       setForm({
         title: detail.title,
         amount: detail.amount.toString(),
         type: detail.type,
-        categoryId: detail.categoryId || '',
-        walletId: detail.walletId || detail.fromWalletId || '',
-        toWalletId: detail.toWalletId || '',
-        date: detail.date.split('T')[0],
-        notes: detail.note || '',
+        categoryId: detail.categoryId || "",
+        walletId: detail.walletId || detail.fromWalletId || "",
+        toWalletId: detail.toWalletId || "",
+        date: detail.date.split("T")[0],
+        notes: detail.note || "",
       });
     }
   };
@@ -176,17 +210,14 @@ export default function TransactionFormPage() {
   const handleDelete = async () => {
     try {
       await deleteTransaction(id!).unwrap();
-      router.push('/transactions');
+      router.push("/transactions");
     } catch (err: any) {
-      setError(err.data?.error || 'Gagal menghapus transaksi.');
+      setError(err.data?.error || "Gagal menghapus transaksi.");
     }
   };
 
   return (
-    <PageWrapper
-      title={isEdit ? 'Edit Transaksi ✏️' : 'Tambah Transaksi 💸'}
-    >
-      {/* INFO */}
+    <PageWrapper title={isEdit ? "Edit Transaksi ✏️" : "Tambah Transaksi 💸"}>
       <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
         Santai aja, catat seperlunya. Yang penting kejadian uangnya nggak lupa 😄
       </Alert>
@@ -197,40 +228,28 @@ export default function TransactionFormPage() {
         </Alert>
       )}
 
-      {/* FORM */}
       <Paper
         sx={{
           p: 4,
           borderRadius: 4,
-          boxShadow: '0 12px 32px rgba(0,0,0,0.05)',
+          boxShadow: "0 12px 32px rgba(0,0,0,0.05)",
         }}
       >
         <Stack spacing={4}>
           {/* BASIC */}
           <Box>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
+            <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
               <PaidIcon fontSize="small" /> Info Utama
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              Bagian paling penting — ceritain transaksi ini secara singkat & jelas.
-            </Typography>
 
-            <Grid container spacing={2}>
+            <Grid container spacing={2} mt={1}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Judul transaksi"
                   fullWidth
                   required
-                  placeholder="Ngopi sore, bayar kos, gaji bulan ini…"
-                  helperText="Bikin yang gampang kamu inget"
                   value={form.title}
-                  onChange={(e) => handleChange('title', e.target.value)}
+                  onChange={(e) => handleChange("title", e.target.value)}
                 />
               </Grid>
 
@@ -240,10 +259,24 @@ export default function TransactionFormPage() {
                   fullWidth
                   required
                   type="number"
-                  helperText="Masukkan nominalnya aja, nanti sistem yang urus"
                   value={form.amount}
-                  onChange={(e) => handleChange('amount', e.target.value)}
+                  onChange={(e) => handleChange("amount", e.target.value)}
                 />
+
+                {/* SMART REACTION */}
+                {smartReaction && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      mt: 0.5,
+                      display: "block",
+                      color: "text.secondary",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {smartReaction}
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </Box>
@@ -252,14 +285,8 @@ export default function TransactionFormPage() {
 
           {/* TYPE */}
           <Box>
-            <Typography fontWeight={700}>
-              Jenis Transaksi
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Uang masuk, keluar, atau cuma pindah dompet?
-            </Typography>
-
-            <Stack direction="row" spacing={2}>
+            <Typography fontWeight={700}>Jenis Transaksi</Typography>
+            <Stack direction="row" spacing={2} mt={2}>
               {typeOptions.map((t) => (
                 <Chip
                   key={t.value}
@@ -267,8 +294,8 @@ export default function TransactionFormPage() {
                   label={t.label}
                   clickable
                   color={t.color as any}
-                  variant={form.type === t.value ? 'filled' : 'outlined'}
-                  onClick={() => handleChange('type', t.value)}
+                  variant={form.type === t.value ? "filled" : "outlined"}
+                  onClick={() => handleChange("type", t.value)}
                   sx={{ px: 2, py: 2, fontWeight: 600 }}
                 />
               ))}
@@ -279,31 +306,21 @@ export default function TransactionFormPage() {
 
           {/* DETAIL */}
           <Box>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
+            <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
               <CategoryIcon fontSize="small" /> Detail Transaksi
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Biar nanti gampang dianalisis & dilihat polanya.
-            </Typography>
 
-            <Grid container spacing={2}>
-              {form.type !== 'TRANSFER' && (
+            <Grid container spacing={2} mt={1}>
+              {form.type !== "TRANSFER" && (
                 <>
                   <Grid size={{ xs: 12, md: 4 }}>
                     <TextField
                       label="Kategori"
                       select
                       fullWidth
-                      helperText="Contoh: Makan, Transport, Hiburan"
                       value={form.categoryId}
                       onChange={(e) =>
-                        handleChange('categoryId', e.target.value)
+                        handleChange("categoryId", e.target.value)
                       }
                     >
                       {categories.map((c: any) => (
@@ -319,52 +336,9 @@ export default function TransactionFormPage() {
                       label="Wallet"
                       select
                       fullWidth
-                      helperText="Dari / ke mana uangnya?"
                       value={form.walletId}
                       onChange={(e) =>
-                        handleChange('walletId', e.target.value)
-                      }
-                    >
-                      {wallets.map((w: any) => (
-                        <MenuItem key={w.id} value={w.id}>
-                          {w.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                </>
-              )}
-
-              {form.type === 'TRANSFER' && (
-                <>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Dari Wallet"
-                      select
-                      fullWidth
-                      helperText="Wallet asal"
-                      value={form.walletId}
-                      onChange={(e) =>
-                        handleChange('walletId', e.target.value)
-                      }
-                    >
-                      {wallets.map((w: any) => (
-                        <MenuItem key={w.id} value={w.id}>
-                          {w.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label="Ke Wallet"
-                      select
-                      fullWidth
-                      helperText="Wallet tujuan"
-                      value={form.toWalletId}
-                      onChange={(e) =>
-                        handleChange('toWalletId', e.target.value)
+                        handleChange("walletId", e.target.value)
                       }
                     >
                       {wallets.map((w: any) => (
@@ -382,10 +356,9 @@ export default function TransactionFormPage() {
                   label="Tanggal"
                   type="date"
                   fullWidth
-                  helperText="Kapan kejadian ini terjadi?"
                   InputLabelProps={{ shrink: true }}
                   value={form.date}
-                  onChange={(e) => handleChange('date', e.target.value)}
+                  onChange={(e) => handleChange("date", e.target.value)}
                 />
               </Grid>
             </Grid>
@@ -395,37 +368,23 @@ export default function TransactionFormPage() {
 
           {/* NOTES */}
           <Box>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
+            <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
               <NotesIcon fontSize="small" /> Catatan (opsional)
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Mau curhat sedikit juga nggak apa-apa 😅
             </Typography>
 
             <TextField
               fullWidth
               multiline
               minRows={3}
-              placeholder="Contoh: lapar mata, khilaf, tapi bahagia"
               value={form.notes}
-              onChange={(e) => handleChange('notes', e.target.value)}
+              onChange={(e) => handleChange("notes", e.target.value)}
             />
           </Box>
 
           {/* ACTION */}
           <Box display="flex" justifyContent="space-between">
-            <Button
-              variant="text"
-              sx={{ fontWeight: 600 }}
-              onClick={() => router.push('/transactions')}
-            >
-              ← Kembali ke daftar
+            <Button variant="text" onClick={() => router.push("/transactions")}>
+              ← Kembali
             </Button>
 
             <Stack direction="row" spacing={2}>
@@ -443,12 +402,8 @@ export default function TransactionFormPage() {
                 </Button>
               )}
 
-              <Button
-                variant="contained"
-                sx={{ px: 4 }}
-                onClick={handleSubmit}
-              >
-                {isEdit ? 'Update' : 'Simpan'}
+              <Button variant="contained" onClick={handleSubmit}>
+                {isEdit ? "Update" : "Simpan"}
               </Button>
             </Stack>
           </Box>
