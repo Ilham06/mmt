@@ -14,6 +14,7 @@ import {
   Avatar,
   Divider,
   Fade,
+  Chip,
 } from "@mui/material";
 
 import WalletIcon from "@mui/icons-material/Wallet";
@@ -22,14 +23,41 @@ import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceW
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 
 import { useState, useEffect } from "react";
-import { useCreateWalletMutation, useUpdateWalletMutation } from "@/redux/slices/walletApi";
+import {
+  useCreateWalletMutation,
+  useUpdateWalletMutation,
+} from "@/redux/slices/walletApi";
 
-// MATCH Prisma ENUMS
+// ======================= STORAGE TYPES =======================
 const typeOptions = [
-  { value: "CASH", label: "Cash", icon: <WalletIcon />, color: "#1976d2" },
-  { value: "BANK", label: "Bank Account", icon: <AccountBalanceRoundedIcon />, color: "#2e7d32" },
-  { value: "EWALLET", label: "e-Wallet", icon: <AccountBalanceWalletRoundedIcon />, color: "#f9a825" },
-  { value: "CREDIT", label: "Credit Card", icon: <CreditCardRoundedIcon />, color: "#c62828" },
+  {
+    value: "CASH",
+    label: "💼 Inventory",
+    desc: "Akses cepat untuk transaksi harian",
+    icon: <WalletIcon />,
+    color: "#1976d2",
+  },
+  {
+    value: "BANK",
+    label: "🏦 Vault",
+    desc: "Penyimpanan aman & stabil",
+    icon: <AccountBalanceRoundedIcon />,
+    color: "#2e7d32",
+  },
+  {
+    value: "EWALLET",
+    label: "⚡ Fast Access",
+    desc: "Cepat & fleksibel",
+    icon: <AccountBalanceWalletRoundedIcon />,
+    color: "#f9a825",
+  },
+  {
+    value: "CREDIT",
+    label: "☠️ Debt Zone",
+    desc: "Zona berbahaya, gunakan dengan bijak",
+    icon: <CreditCardRoundedIcon />,
+    color: "#c62828",
+  },
 ];
 
 export default function AddWalletDialog({ open, onClose, editData }: any) {
@@ -43,7 +71,9 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
   const [createWallet] = useCreateWalletMutation();
   const [updateWallet] = useUpdateWalletMutation();
 
-  // Prefill data ketika edit
+  const isEdit = Boolean(editData);
+
+  // ======================= PREFILL =======================
   useEffect(() => {
     if (editData) {
       setForm({
@@ -64,12 +94,11 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
   const selectedType = typeOptions.find((t) => t.value === form.type);
 
   const handleSubmit = async () => {
-    if (editData) {
+    if (isEdit) {
       await updateWallet({ id: editData.id, ...form });
     } else {
       await createWallet(form);
     }
-
     onClose();
   };
 
@@ -81,38 +110,58 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
       fullWidth
       TransitionComponent={Fade}
       PaperProps={{
-        sx: { borderRadius: 4, p: 0, overflow: "hidden" },
+        sx: { borderRadius: 4, overflow: "hidden" },
       }}
     >
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
       <Box sx={{ p: 3 }}>
         <Typography variant="h5" fontWeight={700}>
-          {editData ? "Edit Wallet" : "Tambah Wallet Baru"}
+          {isEdit ? "✨ Upgrade Storage" : "💰 Bangun Storage Baru"}
         </Typography>
         <Typography color="text.secondary">
-          Kelola akun atau dompet keuangan Anda
+          Atur tempat penyimpanan resource kamu
         </Typography>
       </Box>
 
       <Divider />
 
-      {/* CONTENT */}
+      {/* ================= CONTENT ================= */}
       <DialogContent sx={{ py: 4, px: 4 }}>
         <Stack spacing={3}>
-          {/* NAME */}
+          {/* NPC MESSAGE */}
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: "#F4F6FF",
+            }}
+          >
+            <Typography fontWeight={600}>🧠 DompetBot:</Typography>
+            <Typography variant="body2" color="text.secondary">
+              “Pisahin storage bikin resource kamu lebih gampang dikontrol 🎯”
+            </Typography>
+          </Box>
+
+          {/* STORAGE NAME */}
           <TextField
-            label="Nama Wallet"
+            label="Nama Storage"
             fullWidth
             required
+            placeholder="Contoh: Dompet Utama, Gaji, Jajan"
+            helperText="Bikin nama yang gampang kamu kenali"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
           />
 
-          {/* TYPE SELECTOR */}
+          {/* STORAGE TYPE */}
           <Box>
             <Typography mb={1} fontWeight={600}>
-              Pilih Tipe Wallet
+              Pilih Tipe Storage
             </Typography>
+            <Typography variant="body2" color="text.secondary" mb={2}>
+              Setiap storage punya karakter berbeda
+            </Typography>
+
             <Grid container spacing={2}>
               {typeOptions.map((t) => (
                 <Grid size={{ xs: 6 }} key={t.value}>
@@ -141,7 +190,13 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
                     <Avatar sx={{ bgcolor: t.color, color: "white" }}>
                       {t.icon}
                     </Avatar>
-                    <Typography fontWeight={600}>{t.label}</Typography>
+
+                    <Box>
+                      <Typography fontWeight={600}>{t.label}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {t.desc}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Grid>
               ))}
@@ -150,28 +205,47 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
 
           {/* BALANCE */}
           <TextField
-            label="Saldo Awal"
+            label="Resource Awal (Rp)"
             type="number"
             fullWidth
+            helperText="Jumlah resource saat storage ini dibuat"
             value={form.balance}
             onChange={(e) => handleChange("balance", e.target.value)}
           />
 
           {/* NOTES */}
           <TextField
-            label="Catatan (Opsional)"
+            label="Catatan Tambahan (Opsional)"
             fullWidth
             multiline
             minRows={3}
+            placeholder="Contoh: khusus gaji, jangan dipakai jajan"
             value={form.notes}
             onChange={(e) => handleChange("notes", e.target.value)}
           />
+
+          {/* PREVIEW */}
+          {selectedType && form.name && (
+            <Box>
+              <Typography variant="body2" color="text.secondary" mb={1}>
+                🔍 Preview Storage
+              </Typography>
+              <Chip
+                label={`${selectedType.label} • ${form.name}`}
+                sx={{
+                  bgcolor: selectedType.color + "22",
+                  color: selectedType.color,
+                  fontWeight: 600,
+                }}
+              />
+            </Box>
+          )}
         </Stack>
       </DialogContent>
 
       <Divider />
 
-      {/* ACTIONS */}
+      {/* ================= ACTION ================= */}
       <DialogActions sx={{ p: 3 }}>
         <Button
           onClick={onClose}
@@ -191,7 +265,7 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
           onClick={handleSubmit}
           disabled={!form.name || !form.type}
         >
-          {editData ? "Simpan Perubahan" : "Simpan Wallet"}
+          {isEdit ? "Upgrade Storage 🚀" : "Bangun Storage 🎮"}
         </Button>
       </DialogActions>
     </Dialog>

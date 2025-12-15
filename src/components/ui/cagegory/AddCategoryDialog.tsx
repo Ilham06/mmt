@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
   Divider,
+  Chip,
 } from "@mui/material";
 
 import { iconSet, colorSet } from "@/config/categories";
@@ -28,7 +29,7 @@ import {
 export default function AddCategoryDialog({
   open,
   onClose,
-  category, // jika ada → edit mode
+  category,
 }: {
   open: boolean;
   onClose: () => void;
@@ -41,8 +42,10 @@ export default function AddCategoryDialog({
     color: "",
   });
 
-  const [createCategory, { isLoading: creating }] = useCreateCategoryMutation();
-  const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation();
+  const [createCategory, { isLoading: creating }] =
+    useCreateCategoryMutation();
+  const [updateCategory, { isLoading: updating }] =
+    useUpdateCategoryMutation();
 
   const isEdit = Boolean(category);
 
@@ -75,10 +78,9 @@ export default function AddCategoryDialog({
       } else {
         await createCategory(form).unwrap();
       }
-
       onClose();
     } catch (err) {
-      console.error("ERROR:", err);
+      console.error(err);
     }
   };
 
@@ -90,45 +92,70 @@ export default function AddCategoryDialog({
       fullWidth
       TransitionComponent={Fade}
     >
+      {/* ================= HEADER ================= */}
       <DialogTitle sx={{ pb: 1 }}>
-        {isEdit ? "Edit Category" : "Add New Category"}
+        {isEdit ? "✨ Upgrade Skill" : "🎭 Unlock Skill Baru"}
       </DialogTitle>
 
       <Typography px={3} pb={2} color="text.secondary">
         {isEdit
-          ? "Update category information"
-          : "Used to classify transactions"}
+          ? "Tingkatkan skill ini biar tracking kamu makin akurat."
+          : "Skill ini akan menentukan ke mana resource kamu sering dipakai."}
       </Typography>
 
       <Divider />
 
+      {/* ================= CONTENT ================= */}
       <DialogContent sx={{ py: 3, px: 4 }}>
         <Stack spacing={3}>
-          {/* NAME */}
+          {/* NPC MESSAGE */}
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: "#F4F6FF",
+            }}
+          >
+            <Typography fontWeight={600}>
+              🧠 DompetBot:
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              “Pilih skill dengan bijak, ini bakal sering muncul di laporan kamu 😉”
+            </Typography>
+          </Box>
+
+          {/* SKILL NAME */}
           <TextField
-            label="Category Name"
+            label="Nama Skill"
             fullWidth
             value={form.name}
+            placeholder="Contoh: Survival, Fun, Mobility"
+            helperText="Bikin yang gampang kamu pahami"
             onChange={(e) => handleChange("name", e.target.value)}
           />
 
-          {/* TYPE */}
+          {/* ROLE / TYPE */}
           <TextField
             select
-            label="Type"
+            label="Peran Skill"
             fullWidth
             value={form.type}
+            helperText="Skill ini buff atau damage?"
             onChange={(e) => handleChange("type", e.target.value)}
           >
-            <MenuItem value="EXPENSE">Expense</MenuItem>
-            <MenuItem value="INCOME">Income</MenuItem>
+            <MenuItem value="EXPENSE">⬇️ Damage (Expense)</MenuItem>
+            <MenuItem value="INCOME">⬆️ Buff (Income)</MenuItem>
           </TextField>
 
           {/* ICON PICKER */}
           <Box>
             <Typography mb={1} fontWeight={600}>
-              Choose Icon
+              🎨 Pilih Ikon Skill
             </Typography>
+            <Typography variant="body2" color="text.secondary" mb={1}>
+              Ikon bantu kamu ngenalin skill ini lebih cepat
+            </Typography>
+
             <Grid container spacing={1.5}>
               {iconSet.map((item) => (
                 <Grid key={item.label} size={{ xs: 2 }}>
@@ -142,6 +169,10 @@ export default function AddCategoryDialog({
                         form.icon === item.label
                           ? `2px solid ${form.color || "#4f8ef7"}`
                           : "1px solid #ccc",
+                      bgcolor:
+                        form.icon === item.label
+                          ? (form.color || "#4f8ef7") + "22"
+                          : "transparent",
                     }}
                   >
                     {item.icon}
@@ -154,8 +185,12 @@ export default function AddCategoryDialog({
           {/* COLOR PICKER */}
           <Box>
             <Typography mb={1} fontWeight={600}>
-              Choose Color
+              🎯 Warna Skill
             </Typography>
+            <Typography variant="body2" color="text.secondary" mb={1}>
+              Warna ini bakal dipakai di chart & laporan
+            </Typography>
+
             <Grid container spacing={1.5}>
               {colorSet.map((clr) => (
                 <Grid key={clr} size={{ xs: 2 }}>
@@ -177,12 +212,30 @@ export default function AddCategoryDialog({
               ))}
             </Grid>
           </Box>
+
+          {/* PREVIEW */}
+          {form.name && form.icon && form.color && (
+            <Box>
+              <Typography variant="body2" color="text.secondary" mb={1}>
+                🔍 Preview Skill
+              </Typography>
+              <Chip
+                label={form.name}
+                sx={{
+                  bgcolor: form.color + "33",
+                  color: form.color,
+                  fontWeight: 600,
+                }}
+              />
+            </Box>
+          )}
         </Stack>
       </DialogContent>
 
+      {/* ================= ACTION ================= */}
       <DialogActions sx={{ p: 3 }}>
         <Button sx={{ textTransform: "none" }} onClick={onClose}>
-          Cancel
+          Batal
         </Button>
 
         <Button
@@ -192,10 +245,10 @@ export default function AddCategoryDialog({
           onClick={handleSubmit}
         >
           {creating || updating
-            ? "Saving..."
+            ? "Memproses…"
             : isEdit
-            ? "Update"
-            : "Save"}
+            ? "Upgrade Skill 🚀"
+            : "Unlock Skill 🎮"}
         </Button>
       </DialogActions>
     </Dialog>

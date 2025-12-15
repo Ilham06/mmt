@@ -1,7 +1,13 @@
 "use client";
 
 import { MainTable } from "@/components/common/MainTable";
-import { TableBody, TableRow, TableCell, Typography } from "@mui/material";
+import {
+  TableBody,
+  TableRow,
+  TableCell,
+  Typography,
+  Stack,
+} from "@mui/material";
 import { useGetTransactionsQuery } from "@/redux/slices/transactionApi";
 
 export default function RecentTransactionTable() {
@@ -12,7 +18,7 @@ export default function RecentTransactionTable() {
   const rows = data ?? [];
 
   return (
-    <MainTable header={["Date", "Title", "Amount"]}>
+    <MainTable header={["Waktu", "Aksi", "Impact"]}>
       <TableBody>
         {isLoading ? (
           <TableRow>
@@ -20,37 +26,47 @@ export default function RecentTransactionTable() {
           </TableRow>
         ) : rows.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={3}>No transactions</TableCell>
+            <TableCell colSpan={3}>
+              Belum ada aksi hari ini 👀
+            </TableCell>
           </TableRow>
         ) : (
           rows.map((row: any) => (
             <TableRow key={row.id} hover>
               {/* DATE */}
               <TableCell>
-                <Typography>
+                <Typography variant="body2">
                   {new Date(row.date).toLocaleDateString("id-ID")}
                 </Typography>
               </TableCell>
 
-              {/* TITLE */}
+              {/* ACTION */}
               <TableCell>
-                <Typography fontWeight={500}>{row.title}</Typography>
+                <Stack>
+                  <Typography fontWeight={600}>
+                    {row.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                  >
+                    {row.category?.name} • {row.wallet?.name}
+                  </Typography>
+                </Stack>
               </TableCell>
 
-              {/* AMOUNT */}
+              {/* IMPACT */}
               <TableCell align="right">
                 <Typography
-                  sx={{
-                    fontWeight: 600,
-                    color:
-                      row.type === "EXPENSE"
-                        ? "error.main"
-                        : "success.main",
-                  }}
+                  fontWeight={700}
+                  color={
+                    row.type === "EXPENSE"
+                      ? "error.main"
+                      : "success.main"
+                  }
                 >
-                  {row.type === "EXPENSE"
-                    ? `- Rp ${Math.abs(row.amount).toLocaleString("id-ID")}`
-                    : `+ Rp ${row.amount.toLocaleString("id-ID")}`}
+                  {row.type === "EXPENSE" ? "💥 -" : "💚 +"} Rp{" "}
+                  {Math.abs(row.amount).toLocaleString("id-ID")}
                 </Typography>
               </TableCell>
             </TableRow>

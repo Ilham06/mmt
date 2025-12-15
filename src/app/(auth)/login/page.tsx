@@ -10,11 +10,15 @@ import {
   IconButton,
   InputAdornment,
   CircularProgress,
+  Stack,
+  Chip,
 } from "@mui/material";
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LoginIcon from "@mui/icons-material/Login";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -23,7 +27,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const router = useRouter()
+  const router = useRouter();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -33,29 +37,24 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // <<< PENTING!!!
+        credentials: "include",
         body: JSON.stringify(form),
       });
-      console.log(res)
-
 
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error || "Login failed");
+        setErrorMsg(data.error || "Login gagal");
         setLoading(false);
         return;
       }
 
-      // SUCCESS → REDIRECT
       router.replace("/dashboard");
-
-    } catch (err: any) {
-      setErrorMsg("Something went wrong");
+    } catch {
+      setErrorMsg("Server error 😭");
       setLoading(false);
     }
   };
-
 
   return (
     <Box
@@ -64,113 +63,84 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: (theme) => theme.palette.grey[100],
+        bgcolor: "linear-gradient(135deg,#43cea2,#185a9d)",
         px: 2,
       }}
     >
       <Paper
-        elevation={4}
         sx={{
           width: "100%",
           maxWidth: 420,
           p: 4,
-          borderRadius: 3,
-          background: "white",
+          borderRadius: 4,
         }}
       >
-        {/* TITLE */}
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          textAlign="center"
-          gutterBottom
-          sx={{ mb: 2 }}
-        >
-          Welcome Back
-        </Typography>
+        <Stack spacing={1} alignItems="center" mb={3}>
+          <LocalFireDepartmentRoundedIcon color="warning" fontSize="large" />
+          <Typography variant="h4" fontWeight={900}>
+            Continue Game
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Progresmu sudah menunggu 🔥
+          </Typography>
+        </Stack>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ mb: 4 }}
-        >
-          Please login to continue
-        </Typography>
-
-        {/* ERROR */}
         {errorMsg && (
           <Typography
             color="error"
-            sx={{
-              mb: 2,
-              fontSize: 14,
-              textAlign: "center",
-              bgcolor: "#ffebee",
-              p: 1,
-              borderRadius: 1,
-            }}
+            textAlign="center"
+            sx={{ mb: 2, bgcolor: "#ffebee", p: 1, borderRadius: 2 }}
           >
             {errorMsg}
           </Typography>
         )}
 
-        {/* EMAIL */}
-        <TextField
-          label="Email Address"
-          type="email"
-          fullWidth
-          sx={{ mb: 3 }}
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
+        <Stack spacing={2}>
+          <TextField
+            label="Email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            fullWidth
+          />
 
-        {/* PASSWORD */}
-        <TextField
-          label="Password"
-          fullWidth
-          type={showPass ? "text" : "password"}
-          sx={{ mb: 3 }}
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPass(!showPass)}>
-                  {showPass ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+          <TextField
+            label="Password"
+            type={showPass ? "text" : "password"}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPass(!showPass)}>
+                    {showPass ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
 
-        {/* LOGIN BUTTON */}
         <Button
-          variant="contained"
           fullWidth
-          size="large"
           sx={{
+            mt: 3,
             py: 1.4,
-            borderRadius: 2,
-            fontWeight: 700,
+            borderRadius: 3,
+            fontWeight: 800,
             textTransform: "none",
             fontSize: 16,
           }}
+          variant="contained"
           disabled={loading}
           onClick={handleLogin}
           startIcon={!loading && <LoginIcon />}
         >
-          {loading ? <CircularProgress size={24} /> : "Login"}
+          {loading ? <CircularProgress size={24} /> : "Enter World"}
         </Button>
 
-        {/* FOOTER */}
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ mt: 3 }}
-        >
-          © {new Date().getFullYear()} My Money Tracker
+        <Typography textAlign="center" mt={3} variant="body2">
+          © {new Date().getFullYear()} Financial Game
         </Typography>
       </Paper>
     </Box>

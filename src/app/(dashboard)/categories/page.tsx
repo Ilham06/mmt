@@ -15,6 +15,7 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
+  Stack,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -49,9 +50,7 @@ export default function CategoriesPage() {
   const handleMenu = (event: any, item: any) => {
     setActiveRow(item.id);
     setAnchorEl(event.currentTarget);
-
     setEditItem(item);
-    setOpenAdd(true);
   };
 
   const handleDelete = async () => {
@@ -62,22 +61,41 @@ export default function CategoriesPage() {
 
   return (
     <PageWrapper
-      title="Categories"
+      title="🎭 Skill Manager"
+      // subtitle="Atur skill keuangan kamu biar resource nggak bocor"
       actions={{
-        label: "Add Category",
+        label: "Tambah Skill",
         onClick: () => setOpenAdd(true),
         icon: <AddRoundedIcon />,
       }}
     >
-      {/* FILTER BAR */}
+      {/* NPC MESSAGE */}
       <Paper
         sx={{
-          boxShadow: "var(--mui-shadow)",
+          p: 2,
+          mb: 3,
+          borderRadius: 3,
+          bgcolor: "#F4F6FF",
+        }}
+      >
+        <Typography fontWeight={600}>
+          🧠 DompetBot berkata:
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          “Skill yang rapi bikin laporan & analisis kamu makin akurat 🎯”
+        </Typography>
+      </Paper>
+
+      {/* SEARCH */}
+      <Paper
+        sx={{
+          boxShadow: "0 12px 32px rgba(0,0,0,0.05)",
+          borderRadius: 3,
           mb: 2,
         }}
       >
         <TextField
-          placeholder="Search categories…"
+          placeholder="Cari skill… (contoh: Makan, Hiburan)"
           size="small"
           fullWidth
           value={search}
@@ -89,20 +107,42 @@ export default function CategoriesPage() {
               </InputAdornment>
             ),
           }}
-          sx={{
-            borderRadius: 2,
-            p: 2,
-          }}
+          sx={{ p: 2 }}
         />
 
         {/* LOADING */}
         {isLoading ? (
-          <Box textAlign="center" py={5}>
+          <Box textAlign="center" py={6}>
             <CircularProgress />
+            <Typography variant="body2" color="text.secondary" mt={2}>
+              Sedang memuat skill kamu…
+            </Typography>
+          </Box>
+        ) : filtered.length === 0 ? (
+          <Box textAlign="center" py={6}>
+            <Typography fontWeight={600}>
+              Belum ada skill di sini 👀
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Tambahkan skill pertama biar sistem bisa belajar kebiasaanmu
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => setOpenAdd(true)}
+            >
+              Tambah Skill Pertama 🎮
+            </Button>
           </Box>
         ) : (
           <MainTable
-            header={["Name", "Preview", "Type", "Icon", "Actions"]}
+            header={[
+              "Skill",
+              "Preview",
+              "Role",
+              "Icon",
+              "Aksi",
+            ]}
             hasPagination
             rowsCount={filtered.length}
             page={0}
@@ -110,8 +150,21 @@ export default function CategoriesPage() {
           >
             <TableBody>
               {filtered.map((row: any) => (
-                <TableRow key={row.id} hover>
-                  <TableCell sx={{ fontWeight: 600 }}>{row.name}</TableCell>
+                <TableRow
+                  key={row.id}
+                  hover
+                  sx={{
+                    height: 72,
+                    "&:hover": { bgcolor: "action.hover" },
+                  }}
+                >
+                  {/* NAME */}
+                  <TableCell>
+                    <Typography fontWeight={600}>{row.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Skill aktif
+                    </Typography>
+                  </TableCell>
 
                   {/* PREVIEW */}
                   <TableCell>
@@ -129,11 +182,21 @@ export default function CategoriesPage() {
                   {/* TYPE */}
                   <TableCell>
                     <Chip
-                      label={row.type}
+                      label={
+                        row.type === "INCOME"
+                          ? "⬆️ Buff"
+                          : "⬇️ Damage"
+                      }
                       size="small"
                       sx={{
-                        bgcolor: row.type === "INCOME" ? "#E8F5E9" : "#FFEBEE",
-                        color: row.type === "INCOME" ? "#2E7D32" : "#C62828",
+                        bgcolor:
+                          row.type === "INCOME"
+                            ? "#E8F5E9"
+                            : "#FFEBEE",
+                        color:
+                          row.type === "INCOME"
+                            ? "#2E7D32"
+                            : "#C62828",
                         fontWeight: 600,
                       }}
                     />
@@ -151,10 +214,11 @@ export default function CategoriesPage() {
                     />
                   </TableCell>
 
-                  {/* ACTIONS */}
+                  {/* ACTION */}
                   <TableCell align="right">
                     <IconButton
                       size="small"
+                      sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
                       onClick={(e) => handleMenu(e, row)}
                     >
                       <MoreVertIcon fontSize="small" />
@@ -167,19 +231,29 @@ export default function CategoriesPage() {
         )}
       </Paper>
 
-      {/* MENU */}
+      {/* ACTION MENU */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItem>Edit</MenuItem>
-        <MenuItem sx={{ color: "error.main" }} onClick={handleDelete}>
-          Delete
+        <MenuItem
+          onClick={() => {
+            setOpenAdd(true);
+            setAnchorEl(null);
+          }}
+        >
+          Upgrade Skill ✨
+        </MenuItem>
+        <MenuItem
+          sx={{ color: "error.main" }}
+          onClick={handleDelete}
+        >
+          Hapus Skill 😬
         </MenuItem>
       </Menu>
 
-      {/* ADD CATEGORY DIALOG */}
+      {/* ADD / EDIT DIALOG */}
       <AddCategoryDialog
         open={openAdd}
         onClose={() => {
@@ -188,7 +262,6 @@ export default function CategoriesPage() {
         }}
         category={editItem}
       />
-
     </PageWrapper>
   );
 }

@@ -10,10 +10,13 @@ import {
   IconButton,
   InputAdornment,
   CircularProgress,
+  Stack,
+  Chip,
 } from "@mui/material";
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 
 export default function RegisterPage() {
@@ -26,7 +29,6 @@ export default function RegisterPage() {
 
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -35,7 +37,7 @@ export default function RegisterPage() {
     setErrorMsg("");
 
     if (form.password !== form.confirm) {
-      setErrorMsg("Password and confirmation must match.");
+      setErrorMsg("Password & konfirmasi tidak sama 😵");
       setLoading(false);
       return;
     }
@@ -54,15 +56,14 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error || "Registration failed");
+        setErrorMsg(data.error || "Gagal membuat player");
         setLoading(false);
         return;
       }
 
-      // redirect to login
       window.location.href = "/login";
-    } catch (err: any) {
-      setErrorMsg("Something went wrong");
+    } catch {
+      setErrorMsg("Server lagi capek 😭");
       setLoading(false);
     }
   };
@@ -74,132 +75,116 @@ export default function RegisterPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: (theme) => theme.palette.grey[100],
+        bgcolor: "linear-gradient(135deg,#667eea,#764ba2)",
         px: 2,
       }}
     >
       <Paper
-        elevation={4}
         sx={{
           width: "100%",
-          maxWidth: 450,
+          maxWidth: 460,
           p: 4,
-          borderRadius: 3,
-          background: "white",
+          borderRadius: 4,
         }}
       >
-        {/* TITLE */}
-        <Typography variant="h4" fontWeight={700} textAlign="center" sx={{ mb: 1 }}>
-          Create an Account
-        </Typography>
-
-        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
-          Register to start using your Money Tracker dashboard
-        </Typography>
+        {/* HEADER */}
+        <Stack spacing={1} alignItems="center" mb={3}>
+          <SportsEsportsIcon color="primary" fontSize="large" />
+          <Typography variant="h4" fontWeight={900}>
+            Create Player
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Mulai petualangan finansialmu 🚀
+          </Typography>
+        </Stack>
 
         {/* ERROR */}
         {errorMsg && (
           <Typography
             color="error"
-            sx={{
-              mb: 2,
-              fontSize: 14,
-              textAlign: "center",
-              bgcolor: "#ffebee",
-              p: 1,
-              borderRadius: 1,
-            }}
+            textAlign="center"
+            sx={{ mb: 2, bgcolor: "#ffebee", p: 1, borderRadius: 2 }}
           >
             {errorMsg}
           </Typography>
         )}
 
-        {/* NAME */}
-        <TextField
-          label="Full Name"
-          fullWidth
-          sx={{ mb: 3 }}
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
+        <Stack spacing={2}>
+          <TextField
+            label="Nama Player"
+            placeholder="Dompet Slayer"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            fullWidth
+          />
 
-        {/* EMAIL */}
-        <TextField
-          label="Email Address"
-          type="email"
-          fullWidth
-          sx={{ mb: 3 }}
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
+          <TextField
+            label="Email"
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            fullWidth
+          />
 
-        {/* PASSWORD */}
-        <TextField
-          label="Password"
-          fullWidth
-          type={showPass ? "text" : "password"}
-          sx={{ mb: 3 }}
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPass(!showPass)}>
-                  {showPass ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+          <TextField
+            label="Password"
+            type={showPass ? "text" : "password"}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPass(!showPass)}>
+                    {showPass ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
-        {/* CONFIRM PASSWORD */}
-        <TextField
-          label="Confirm Password"
-          fullWidth
-          type={showConfirm ? "text" : "password"}
-          sx={{ mb: 3 }}
-          value={form.confirm}
-          onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowConfirm(!showConfirm)}>
-                  {showConfirm ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+          <TextField
+            label="Confirm Password"
+            type={showConfirm ? "text" : "password"}
+            value={form.confirm}
+            onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirm(!showConfirm)}>
+                    {showConfirm ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
 
-        {/* REGISTER BUTTON */}
+        {/* ACTION */}
         <Button
-          variant="contained"
           fullWidth
-          size="large"
           sx={{
+            mt: 3,
             py: 1.4,
-            borderRadius: 2,
-            fontWeight: 700,
+            borderRadius: 3,
+            fontWeight: 800,
             textTransform: "none",
             fontSize: 16,
           }}
+          variant="contained"
           disabled={loading}
           onClick={handleRegister}
           startIcon={!loading && <PersonAddAlt1Icon />}
         >
-          {loading ? <CircularProgress size={24} /> : "Create Account"}
+          {loading ? <CircularProgress size={24} /> : "Start New Game"}
         </Button>
 
         {/* FOOTER */}
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ mt: 3 }}
-        >
-          Already have an account?{" "}
-          <a href="/login" style={{ color: "#1976d2", textDecoration: "none", fontWeight: 600 }}>
-            Login
+        <Typography textAlign="center" mt={3} variant="body2">
+          Sudah punya player?{" "}
+          <a href="/login" style={{ fontWeight: 700 }}>
+            Continue Game →
           </a>
         </Typography>
       </Paper>
