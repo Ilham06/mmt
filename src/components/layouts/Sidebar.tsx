@@ -45,13 +45,13 @@ const menu = [
   },
   {
     label: 'Daily Quests',
-    href: '/quests',
+    href: '/quest',
     icon: <FlagIcon />,
     badge: 'NEW',
   },
   {
     label: 'Survival Mode',
-    href: '/budget',
+    href: '/budgets',
     icon: <FavoriteIcon />,
   },
 
@@ -74,7 +74,7 @@ const menu = [
 
   {
     label: 'Achievements',
-    href: '/achievements',
+    href: '/archivement',
     icon: <EmojiEventsIcon />,
   },
   {
@@ -89,7 +89,7 @@ const menu = [
   },
   {
     label: 'Settings',
-    href: '/settings',
+    href: '/setting',
     icon: <SettingsIcon />,
   },
 ];

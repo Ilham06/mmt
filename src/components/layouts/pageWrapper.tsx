@@ -4,6 +4,7 @@ import { Box, Breadcrumbs, Button, Stack, Typography } from '@mui/material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AddIcon from '@mui/icons-material/Add';
+import MotionButton from '../motions/MotionButton';
 
 interface ActionButton {
   label: string;
@@ -54,7 +55,7 @@ export default function PageWrapper({
           <Stack direction="row" spacing={1}>
             {actionButtons.map((btn, idx) => {
               const Btn = (
-                <Button
+                <MotionButton
                   key={idx}
                   variant={btn.variant || 'contained'}
                   startIcon={btn.icon || <AddIcon />}
@@ -62,7 +63,7 @@ export default function PageWrapper({
                   onClick={btn.onClick}
                 >
                   {btn.label}
-                </Button>
+                </MotionButton>
               );
 
               return btn.href ? (
