@@ -7,6 +7,7 @@ import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import TrendingUpRounded from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRounded from '@mui/icons-material/TrendingDownRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
+import MotionCard from '@/components/motions/MotionCard';
 
 type Props = {
   stats?: {
@@ -58,7 +59,7 @@ export default function TransactionSummary({ stats }: Props) {
     <Grid container spacing={2}>
       {items.map((item, i) => (
         <Grid size={{xs: 12, md: 3}} key={i}>
-          <Card
+          <MotionCard
             elevation={0}
             sx={{
               p: 3,
@@ -96,7 +97,7 @@ export default function TransactionSummary({ stats }: Props) {
                 {item.count} transaksi
               </Typography>
             </Box>
-          </Card>
+          </MotionCard>
         </Grid>
       ))}
     </Grid>

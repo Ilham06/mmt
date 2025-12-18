@@ -12,8 +12,9 @@ import {
   Badge,
   ListItemIcon,
   Divider,
-  Paper,
   ListItemText,
+  Chip,
+  Stack,
 } from '@mui/material';
 
 import SearchIcon from '@mui/icons-material/Search';
@@ -21,17 +22,16 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
 
 import Link from 'next/link';
 import { useState } from 'react';
 import { sidebarWidth } from './Sidebar';
 import { useRouter } from 'next/navigation';
 
-
 export function Topbar() {
-  const router = useRouter()
-  const [openSearch, setOpenSearch] = useState(false);
+  const router = useRouter();
 
   const [anchorNotif, setAnchorNotif] = useState<null | HTMLElement>(null);
   const [anchorProfile, setAnchorProfile] = useState<null | HTMLElement>(null);
@@ -39,43 +39,42 @@ export function Topbar() {
   const openNotif = Boolean(anchorNotif);
   const openProfile = Boolean(anchorProfile);
 
-  const handleNotifOpen = (e: any) => setAnchorNotif(e.currentTarget);
-  const handleNotifClose = () => setAnchorNotif(null);
+  // ================= MOCK PLAYER STATE (NANTI GANTI STORE) =================
+  const player = {
+    name: 'Dompet Survivor',
+    level: 3,
+    streak: 4,
+    initials: 'DS',
+  };
 
-  const handleProfileOpen = (e: any) => setAnchorProfile(e.currentTarget);
-  const handleProfileClose = () => setAnchorProfile(null);
-
-  // Dummy notifications
+  // ================= MOCK EVENTS / NOTIFICATIONS =================
   const notifications = [
     {
       id: 1,
-      title: 'Interview Reminder',
-      message: 'User interview with John Doe at 3 PM',
-      time: '2h ago',
+      title: 'Quest Progress 🎯',
+      message: 'No Jajan 3 Hari hampir selesai!',
+      time: 'Hari ini',
     },
     {
       id: 2,
-      title: 'New Applicant',
-      message: 'Jane Smith applied for Backend Engineer',
-      time: '5h ago',
+      title: 'Streak Aman 🔥',
+      message: 'Kamu berhasil jaga streak hari ini',
+      time: '1 jam lalu',
     },
   ];
 
   const handleLogout = async () => {
-  await fetch("/api/auth/logout", {
-    method: "POST",
-    credentials: "include",
-  });
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
 
-  router.push('login')
-};
-
+    router.push('/login');
+  };
 
   return (
     <>
-      {/* =============================== */}
-      {/* APP BAR */}
-      {/* =============================== */}
+      {/* ================= APP BAR ================= */}
       <AppBar
         position="fixed"
         elevation={0}
@@ -84,116 +83,107 @@ export function Topbar() {
           width: `calc(100% - ${sidebarWidth}px)`,
           bgcolor: 'background.paper',
           color: 'text.primary',
-          borderBottom: '1px solid rgba(145, 158, 171, 0.24)',
           borderRadius: 0
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
+          {/* ================= LEFT ================= */}
+          <Stack spacing={0.5}>
+            <Typography
+              variant="subtitle1"
+              fontWeight={800}
+              sx={{ color: 'primary.main', letterSpacing: 0.4 }}
+            >
+              🎮 Money Tracker
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Player Hub
+            </Typography>
+          </Stack>
 
-          {/* =============================== */}
-          {/* LEFT SECTION */}
-          {/* =============================== */}
-          <Typography
-            variant="subtitle1"
-            fontWeight={700}
-            sx={{ color: 'primary.main', letterSpacing: 0.3 }}
-          >
-            Money Tracker Dashboard
-          </Typography>
+          {/* ================= RIGHT ================= */}
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            {/* PLAYER MINI STATS */}
+            <Stack direction="row" spacing={1}>
+              <Chip
+                size="small"
+                icon={<EmojiEventsRoundedIcon />}
+                label={`Lv ${player.level}`}
+                color="primary"
+                sx={{ fontWeight: 700 }}
+              />
+              <Chip
+                size="small"
+                icon={<LocalFireDepartmentRoundedIcon />}
+                label={`${player.streak}🔥`}
+                color="warning"
+                sx={{ fontWeight: 700 }}
+              />
+            </Stack>
 
-          {/* =============================== */}
-          {/* RIGHT SECTION (ICONS) */}
-          {/* =============================== */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
             {/* SEARCH */}
-            <IconButton onClick={() => setOpenSearch(true)}>
+            <IconButton>
               <SearchIcon />
             </IconButton>
 
-            {/* NOTIFICATIONS */}
-            <IconButton onClick={handleNotifOpen}>
+            {/* NOTIFICATION */}
+            <IconButton onClick={(e) => setAnchorNotif(e.currentTarget)}>
               <Badge badgeContent={notifications.length} color="error">
                 <NotificationsNoneIcon />
               </Badge>
             </IconButton>
 
-            {/* SETTINGS */}
-            <IconButton component={Link} href="/settings">
-              <SettingsIcon />
-            </IconButton>
-
             {/* PROFILE */}
-            <IconButton onClick={handleProfileOpen}>
-              <Avatar sx={{ width: 34, height: 34 }}>IM</Avatar>
+            <IconButton onClick={(e) => setAnchorProfile(e.currentTarget)}>
+              <Avatar
+                sx={{
+                  width: 34,
+                  height: 34,
+                  bgcolor: 'primary.main',
+                  fontWeight: 700,
+                }}
+              >
+                {player.initials}
+              </Avatar>
             </IconButton>
-          </Box>
+          </Stack>
         </Toolbar>
       </AppBar>
 
-      {/* =============================== */}
-      {/* SEARCH MODAL */}
-      {/* =============================== */}
-      {/* <GlobalApplicantSearch open={openSearch} onClose={() => setOpenSearch(false)} /> */}
-
-      {/* =============================== */}
-      {/* NOTIFICATION MENU */}
-      {/* =============================== */}
+      {/* ================= NOTIFICATION MENU ================= */}
       <Menu
         anchorEl={anchorNotif}
         open={openNotif}
-        onClose={handleNotifClose}
+        onClose={() => setAnchorNotif(null)}
         PaperProps={{
           sx: {
             mt: 1,
             width: 320,
-            borderRadius: 2,
-            maxHeight: 400,
-            overflowY: 'auto',
+            borderRadius: 3,
             p: 1,
           },
         }}
       >
-        <Typography
-          fontWeight={700}
-          px={2}
-          py={1}
-          fontSize={15}
-          color="text.primary"
-        >
-          Notifications
+        <Typography fontWeight={800} px={2} py={1}>
+          Event Log
         </Typography>
 
         <Divider />
 
         {notifications.map((n) => (
-          <MenuItem
-            key={n.id}
-            sx={{ borderRadius: 2, py: 1.5 }}
-            onClick={handleNotifClose}
-          >
-            <ListItemIcon>
-              <MoreHorizIcon fontSize="small" />
-            </ListItemIcon>
+          <MenuItem key={n.id} sx={{ borderRadius: 2 }}>
             <ListItemText
               primary={
-                <Typography fontWeight={600} fontSize={14}>
+                <Typography fontWeight={700} fontSize={14}>
                   {n.title}
                 </Typography>
               }
               secondary={
                 <>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ display: 'block', fontSize: 13 }}
-                  >
+                  <Typography variant="body2" color="text.secondary">
                     {n.message}
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ mt: 0.5, display: 'block' }}
-                  >
+                  <Typography variant="caption" color="text.secondary">
                     {n.time}
                   </Typography>
                 </>
@@ -204,23 +194,21 @@ export function Topbar() {
 
         {notifications.length === 0 && (
           <Typography textAlign="center" py={2} color="text.secondary">
-            No notifications
+            Aman… belum ada event
           </Typography>
         )}
       </Menu>
 
-      {/* =============================== */}
-      {/* PROFILE MENU */}
-      {/* =============================== */}
+      {/* ================= PROFILE MENU ================= */}
       <Menu
         anchorEl={anchorProfile}
         open={openProfile}
-        onClose={handleProfileClose}
+        onClose={() => setAnchorProfile(null)}
         PaperProps={{
           sx: {
             mt: 1,
-            width: 200,
-            borderRadius: 2,
+            width: 220,
+            borderRadius: 3,
             p: 1,
           },
         }}
@@ -243,7 +231,7 @@ export function Topbar() {
 
         <MenuItem
           onClick={handleLogout}
-          sx={{ color: 'error.main', fontWeight: 600 }}
+          sx={{ color: 'error.main', fontWeight: 700 }}
         >
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />
