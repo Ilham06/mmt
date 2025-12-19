@@ -5,9 +5,9 @@ WORKDIR /app
 # DEPENDENCIES
 # =====================
 FROM base AS deps
-COPY package.json yarn.lock ./
+COPY package.json package-lock.json ./
 COPY prisma ./prisma
-RUN yarn install --frozen-lockfile
+RUN npm ci
 
 # =====================
 # BUILD
@@ -15,8 +15,8 @@ RUN yarn install --frozen-lockfile
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN yarn prisma generate
-RUN yarn build
+RUN npx prisma generate
+RUN npm run build
 
 # =====================
 # PRODUCTION
@@ -31,4 +31,4 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
-CMD ["yarn", "start"]
+CMD ["npm", "run", "start"]
