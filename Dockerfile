@@ -1,34 +1,23 @@
-FROM node:20-alpine AS base
+FROM node:20-bookworm
+
 WORKDIR /app
 
-# =====================
-# DEPENDENCIES
-# =====================
-FROM base AS deps
+# 1. Copy dependency files
 COPY package.json package-lock.json ./
-COPY prisma ./prisma
+
+# 2. Install deps
 RUN npm ci
 
-# =====================
-# BUILD
-# =====================
-FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
+# 3. Copy source
 COPY . .
+
+# 4. Prisma generate
 RUN npx prisma generate
+
+# 5. Build Next.js
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# =====================
-# PRODUCTION
-# =====================
-FROM base AS runner
-ENV NODE_ENV=production
-
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
-
 EXPOSE 3000
+
 CMD ["npm", "run", "start"]
