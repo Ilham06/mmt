@@ -2,18 +2,21 @@ import { configureStore } from "@reduxjs/toolkit";
 import { walletApi } from "./slices/walletApi";
 import { categoryApi } from "./slices/categoryApi";
 import { transactionApi } from "./slices/transactionApi";
+import { budgetApi } from "./slices/budgetApi";
 
 export const store = configureStore({
   reducer: {
     [walletApi.reducerPath]: walletApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
     [transactionApi.reducerPath]: transactionApi.reducer,
+    [budgetApi.reducerPath]: budgetApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
       walletApi.middleware,
       categoryApi.middleware,
       transactionApi.middleware,
+      budgetApi.middleware,
     ]),
 });
 
