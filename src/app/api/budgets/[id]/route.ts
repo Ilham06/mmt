@@ -1,11 +1,17 @@
 import { getAuthUser } from "@/libs/getAuthUser";
 import { prisma } from "@/libs/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+type Params = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+// ================= PUT =================
+export async function PUT(req: NextRequest, { params }: Params) {
+  const { id } = await params;
+
   const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,7 +21,7 @@ export async function PUT(
 
   const budget = await prisma.budget.findFirst({
     where: {
-      id: params.id,
+      id,
       userId: user.id,
     },
   });
@@ -25,7 +31,7 @@ export async function PUT(
   }
 
   const updated = await prisma.budget.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       limit: body.limit ?? budget.limit,
     },
@@ -34,10 +40,10 @@ export async function PUT(
   return NextResponse.json(updated);
 }
 
-export async function DELETE(
-  _: Request,
-  { params }: { params: { id: string } }
-) {
+// ================= DELETE =================
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const { id } = await params;
+
   const user = await getAuthUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -45,7 +51,7 @@ export async function DELETE(
 
   await prisma.budget.deleteMany({
     where: {
-      id: params.id,
+      id,
       userId: user.id,
     },
   });
