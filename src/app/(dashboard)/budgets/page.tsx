@@ -9,55 +9,28 @@ import {
   LinearProgress,
   Chip,
   Divider,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
 } from "@mui/material";
 
-import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+
+import { useState } from "react";
 
 import PageWrapper from "@/components/layouts/pageWrapper";
+import { useGetBudgetStatusQuery, useCreateBudgetMutation } from "@/redux/slices/budgetApi";
+import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
 
-// ======================= MOCK BUDGET DATA =======================
-const budgets = [
-  {
-    id: 1,
-    category: "Makan",
-    icon: "🍔",
-    limit: 1000000,
-    used: 450000,
-  },
-  {
-    id: 2,
-    category: "Transport",
-    icon: "🚕",
-    limit: 500000,
-    used: 420000,
-  },
-  {
-    id: 3,
-    category: "Hiburan",
-    icon: "🎮",
-    limit: 300000,
-    used: 290000,
-  },
-  {
-    id: 4,
-    category: "Belanja",
-    icon: "🛍️",
-    limit: 400000,
-    used: 410000,
-  },
-];
-
-const getStatus = (used: number, limit: number) => {
-  const pct = (used / limit) * 100;
-  if (pct < 60) return "SAFE";
-  if (pct < 90) return "WARNING";
-  return "CRITICAL";
-};
-
-const statusMeta: any = {
+// ======================= STATUS META =======================
+const statusMeta: Record<string, any> = {
   SAFE: {
     label: "Safe",
     color: "success",
@@ -76,54 +49,69 @@ const statusMeta: any = {
 };
 
 export default function BudgetSurvivalPage() {
+  const { data: budgets = [], isLoading } = useGetBudgetStatusQuery();
+  const { data: categories = [] } = useGetCategoriesQuery();
+  const [createBudget] = useCreateBudgetMutation();
+
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    categoryId: "",
+    limit: "",
+  });
+
+  const handleSubmit = async () => {
+    if (!form.categoryId || !form.limit) return;
+
+    await createBudget({
+      categoryId: form.categoryId,
+      limit: Number(form.limit),
+      period: "MONTHLY",
+    });
+
+    setForm({ categoryId: "", limit: "" });
+    setOpen(false);
+  };
+
   return (
-    <PageWrapper
-      title="❤️ Survival Mode"
-      // subtitle="Jaga HP keuangan kamu biar nggak tumbang"
-    >
+    <PageWrapper title="❤️ Survival Mode">
       {/* NPC MESSAGE */}
-      <Card
-        sx={{
-          p: 2,
-          mb: 3,
-          borderRadius: 3,
-          bgcolor: "#F4F6FF",
-        }}
-      >
+      <Card sx={{ p: 2, mb: 3, borderRadius: 3, bgcolor: "#F4F6FF" }}>
         <Typography fontWeight={600}>🧠 DompetBot:</Typography>
         <Typography variant="body2" color="text.secondary">
           “Pelan-pelan aja. Yang penting HP kamu nggak habis 🔥”
         </Typography>
       </Card>
 
+      {/* ADD BUTTON */}
+      <Box mb={3} display="flex" justifyContent="flex-end">
+        <Button
+          variant="contained"
+          startIcon={<AddRoundedIcon />}
+          onClick={() => setOpen(true)}
+        >
+          Tambah Budget
+        </Button>
+      </Box>
+
+      {/* BUDGET LIST */}
       <Grid container spacing={3}>
-        {budgets.map((b) => {
-          const status = getStatus(b.used, b.limit);
-          const meta = statusMeta[status];
-          const percent = Math.min((b.used / b.limit) * 100, 100);
-          const remaining = Math.max(b.limit - b.used, 0);
+        {isLoading && (
+          <Typography color="text.secondary">Loading budget...</Typography>
+        )}
+
+        {budgets.map((b: any) => {
+          const meta = statusMeta[b.status];
+          const percent = Math.min(b.percent, 100);
 
           return (
             <Grid key={b.id} size={{ xs: 12, md: 6 }}>
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: 4,
-                  boxShadow: "0 12px 32px rgba(0,0,0,0.08)",
-                }}
-              >
+              <Card sx={{ p: 3, borderRadius: 4 }}>
                 <Stack spacing={2}>
                   {/* HEADER */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
+                  <Stack direction="row" justifyContent="space-between">
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography fontSize={28}>{b.icon}</Typography>
-                      <Typography fontWeight={700}>
-                        {b.category}
-                      </Typography>
+                      <Typography fontSize={26}>{b.icon}</Typography>
+                      <Typography fontWeight={700}>{b.category}</Typography>
                     </Stack>
 
                     <Chip
@@ -145,44 +133,32 @@ export default function BudgetSurvivalPage() {
                         bgcolor: "#eee",
                         "& .MuiLinearProgress-bar": {
                           bgcolor:
-                            status === "SAFE"
+                            b.status === "SAFE"
                               ? "#4CAF50"
-                              : status === "WARNING"
+                              : b.status === "WARNING"
                               ? "#FF9800"
                               : "#F44336",
                         },
                       }}
                     />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      mt={0.5}
-                    >
-                      HP tersisa: Rp{" "}
-                      {remaining.toLocaleString("id-ID")}
+                    <Typography variant="caption" color="text.secondary">
+                      HP tersisa: Rp {b.remaining.toLocaleString("id-ID")}
                     </Typography>
                   </Box>
 
                   <Divider />
 
                   {/* DETAIL */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
+                  <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">
-                      Damage: Rp{" "}
-                      {b.used.toLocaleString("id-ID")}
+                      Damage: Rp {b.used.toLocaleString("id-ID")}
                     </Typography>
                     <Typography variant="body2">
-                      Max HP: Rp{" "}
-                      {b.limit.toLocaleString("id-ID")}
+                      Max HP: Rp {b.limit.toLocaleString("id-ID")}
                     </Typography>
                   </Stack>
 
-                  {/* STATUS TEXT */}
-                  {status === "CRITICAL" && (
+                  {b.status === "CRITICAL" && (
                     <Typography
                       variant="body2"
                       color="error.main"
@@ -197,6 +173,48 @@ export default function BudgetSurvivalPage() {
           );
         })}
       </Grid>
+
+      {/* ================= MODAL ADD BUDGET ================= */}
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>🎯 Set Budget Baru</DialogTitle>
+
+        <DialogContent sx={{ pt: 2 }}>
+          <Stack spacing={3}>
+            <TextField
+              select
+              label="Kategori"
+              value={form.categoryId}
+              onChange={(e) =>
+                setForm({ ...form, categoryId: e.target.value })
+              }
+            >
+              {categories
+                .filter((c: any) => c.type === "EXPENSE")
+                .map((c: any) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+            </TextField>
+
+            <TextField
+              label="Limit Budget (Rp)"
+              type="number"
+              value={form.limit}
+              onChange={(e) =>
+                setForm({ ...form, limit: e.target.value })
+              }
+            />
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Batal</Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            Simpan
+          </Button>
+        </DialogActions>
+      </Dialog>
     </PageWrapper>
   );
 }
