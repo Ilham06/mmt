@@ -110,7 +110,7 @@ export default function BudgetSurvivalPage() {
                   {/* HEADER */}
                   <Stack direction="row" justifyContent="space-between">
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography fontSize={26}>{b.icon}</Typography>
+                      {/* <Typography fontSize={26}>{b.icon}</Typography> */}
                       <Typography fontWeight={700}>{b.category}</Typography>
                     </Stack>
 

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   AppBar,
@@ -15,22 +15,29 @@ import {
   ListItemText,
   Chip,
   Stack,
-} from '@mui/material';
+} from "@mui/material";
 
-import SearchIcon from '@mui/icons-material/Search';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
-import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
-import PersonIcon from '@mui/icons-material/Person';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
+import SearchIcon from "@mui/icons-material/Search";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+import MenuIcon from "@mui/icons-material/Menu";
+import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { sidebarWidth } from './Sidebar';
-import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useState } from "react";
+import { sidebarWidth } from "./Sidebar";
+import { useRouter } from "next/navigation";
 
-export function Topbar() {
+export function Topbar({
+  sidebarOpen,
+  onToggleSidebar,
+}: {
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
+}) {
   const router = useRouter();
 
   const [anchorNotif, setAnchorNotif] = useState<null | HTMLElement>(null);
@@ -41,35 +48,35 @@ export function Topbar() {
 
   // ================= MOCK PLAYER STATE (NANTI GANTI STORE) =================
   const player = {
-    name: 'Dompet Survivor',
+    name: "Dompet Survivor",
     level: 3,
     streak: 4,
-    initials: 'DS',
+    initials: "DS",
   };
 
   // ================= MOCK EVENTS / NOTIFICATIONS =================
   const notifications = [
     {
       id: 1,
-      title: 'Quest Progress 🎯',
-      message: 'No Jajan 3 Hari hampir selesai!',
-      time: 'Hari ini',
+      title: "Quest Progress 🎯",
+      message: "No Jajan 3 Hari hampir selesai!",
+      time: "Hari ini",
     },
     {
       id: 2,
-      title: 'Streak Aman 🔥',
-      message: 'Kamu berhasil jaga streak hari ini',
-      time: '1 jam lalu',
+      title: "Streak Aman 🔥",
+      message: "Kamu berhasil jaga streak hari ini",
+      time: "1 jam lalu",
     },
   ];
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
     });
 
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
@@ -79,26 +86,33 @@ export function Topbar() {
         position="fixed"
         elevation={0}
         sx={{
-          ml: `${sidebarWidth}px`,
-          width: `calc(100% - ${sidebarWidth}px)`,
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          borderRadius: 0
+          ml: sidebarOpen ? `${sidebarWidth}px` : 0,
+          width: sidebarOpen ? `calc(100% - ${sidebarWidth}px)` : "100%",
+          bgcolor: "background.paper",
+          color: "text.primary",
+          transition: "all .2s ease",
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
           {/* ================= LEFT ================= */}
-          <Stack spacing={0.5}>
-            <Typography
-              variant="subtitle1"
-              fontWeight={800}
-              sx={{ color: 'primary.main', letterSpacing: 0.4 }}
-            >
-              🎮 Money Tracker
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Player Hub
-            </Typography>
+          {/* LEFT */}
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <IconButton onClick={onToggleSidebar}>
+              <MenuIcon />
+            </IconButton>
+
+            <Stack spacing={0.5}>
+              <Typography
+                variant="subtitle1"
+                fontWeight={800}
+                sx={{ color: "primary.main", letterSpacing: 0.4 }}
+              >
+                🎮 Money Tracker
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Player Hub
+              </Typography>
+            </Stack>
           </Stack>
 
           {/* ================= RIGHT ================= */}
@@ -139,7 +153,7 @@ export function Topbar() {
                 sx={{
                   width: 34,
                   height: 34,
-                  bgcolor: 'primary.main',
+                  bgcolor: "primary.main",
                   fontWeight: 700,
                 }}
               >
@@ -231,7 +245,7 @@ export function Topbar() {
 
         <MenuItem
           onClick={handleLogout}
-          sx={{ color: 'error.main', fontWeight: 700 }}
+          sx={{ color: "error.main", fontWeight: 700 }}
         >
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />
