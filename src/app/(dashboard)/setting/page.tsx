@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Box,
@@ -12,21 +12,22 @@ import {
   FormControlLabel,
   Grid,
   Alert,
-  Chip,
-} from '@mui/material';
+} from "@mui/material";
 
-import PageWrapper from '@/components/layouts/pageWrapper';
+import PageWrapper from "@/components/layouts/pageWrapper";
 
 export default function SettingsPage() {
   return (
-    <PageWrapper title="⚙️ Settings">
+    <PageWrapper title="Pengaturan">
       <Stack spacing={4}>
         {/* ================= PROFILE ================= */}
-        <Card sx={{ p: 4, borderRadius: 4 }}>
-          <Stack spacing={1} mb={3}>
-            <Typography fontWeight={800}>🧑 Profile</Typography>
+        <Card sx={{ p: 4 }}>
+          <Stack spacing={0.5} mb={3}>
+            <Typography fontWeight={800}>
+              Profil Pengguna
+            </Typography>
             <Typography variant="body2" color="text.secondary">
-              Biar aplikasi kenal kamu lebih dekat
+              Informasi dasar yang digunakan di seluruh aplikasi
             </Typography>
           </Stack>
 
@@ -35,90 +36,100 @@ export default function SettingsPage() {
               <TextField
                 label="Nama"
                 fullWidth
-                placeholder="Nama panggilan juga boleh 😄"
+                placeholder="Nama yang ditampilkan"
                 defaultValue="Dompet Survivor"
               />
             </Grid>
+
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Email"
                 fullWidth
                 defaultValue="user@email.com"
+                disabled
               />
             </Grid>
           </Grid>
 
           <Box mt={3}>
-            <Button variant="contained">Simpan Profil</Button>
+            <Button variant="contained">
+              Simpan Perubahan
+            </Button>
           </Box>
         </Card>
 
         {/* ================= PREFERENCES ================= */}
-        <Card sx={{ p: 4, borderRadius: 4 }}>
-          <Stack spacing={1} mb={3}>
-            <Typography fontWeight={800}>🎨 Preferensi</Typography>
+        <Card sx={{ p: 4 }}>
+          <Stack spacing={0.5} mb={3}>
+            <Typography fontWeight={800}>
+              Preferensi Aplikasi
+            </Typography>
             <Typography variant="body2" color="text.secondary">
-              Atur tampilan & kebiasaan sesuai gaya kamu
+              Sesuaikan tampilan dan perilaku aplikasi dengan kebutuhan kamu
             </Typography>
           </Stack>
 
           <Stack spacing={2}>
             <FormControlLabel
               control={<Switch defaultChecked />}
-              label="🌙 Dark mode (biar mata adem)"
+              label="Mode gelap"
             />
 
             <FormControlLabel
               control={<Switch defaultChecked />}
-              label="💱 Tampilkan simbol Rupiah (Rp)"
+              label="Tampilkan simbol mata uang (Rp)"
             />
 
             <FormControlLabel
               control={<Switch defaultChecked />}
-              label="🧠 Aktifkan smart suggestion"
+              label="Aktifkan saran otomatis"
             />
           </Stack>
         </Card>
 
         {/* ================= NOTIFICATIONS ================= */}
-        <Card sx={{ p: 4, borderRadius: 4 }}>
-          <Stack spacing={1} mb={3}>
-            <Typography fontWeight={800}>🔔 Notifikasi</Typography>
+        <Card sx={{ p: 4 }}>
+          <Stack spacing={0.5} mb={3}>
+            <Typography fontWeight={800}>
+              Notifikasi
+            </Typography>
             <Typography variant="body2" color="text.secondary">
-              Biar nggak kecolongan tanpa sadar
+              Pilih informasi yang ingin kamu terima
             </Typography>
           </Stack>
 
           <Stack spacing={2}>
             <FormControlLabel
               control={<Switch defaultChecked />}
-              label="🚨 Peringatan mendekati budget"
+              label="Peringatan mendekati batas anggaran"
             />
 
             <FormControlLabel
               control={<Switch defaultChecked />}
-              label="📅 Daily recap (ringkasan harian)"
+              label="Ringkasan harian"
             />
 
             <FormControlLabel
               control={<Switch />}
-              label="📊 Ringkasan bulanan"
+              label="Ringkasan bulanan"
             />
           </Stack>
         </Card>
 
         {/* ================= SECURITY ================= */}
-        <Card sx={{ p: 4, borderRadius: 4 }}>
-          <Stack spacing={1} mb={3}>
-            <Typography fontWeight={800}>🔐 Keamanan</Typography>
+        <Card sx={{ p: 4 }}>
+          <Stack spacing={0.5} mb={3}>
+            <Typography fontWeight={800}>
+              Keamanan Akun
+            </Typography>
             <Typography variant="body2" color="text.secondary">
-              Jaga akun kamu tetap aman
+              Kelola kredensial untuk menjaga keamanan akun kamu
             </Typography>
           </Stack>
 
           <Stack spacing={2}>
             <TextField
-              label="Password sekarang"
+              label="Password saat ini"
               type="password"
               fullWidth
             />
@@ -134,7 +145,9 @@ export default function SettingsPage() {
             />
 
             <Box>
-              <Button variant="outlined">Update Password</Button>
+              <Button variant="outlined">
+                Perbarui Password
+              </Button>
             </Box>
           </Stack>
         </Card>
@@ -143,31 +156,30 @@ export default function SettingsPage() {
         <Card
           sx={{
             p: 4,
-            borderRadius: 4,
-            border: '1px dashed',
-            borderColor: 'error.light',
+            border: "1px solid",
+            borderColor: "error.light",
           }}
         >
-          <Stack spacing={1} mb={2}>
+          <Stack spacing={0.5} mb={2}>
             <Typography fontWeight={800} color="error.main">
-              ☠️ Danger Zone
+              Area Sensitif
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Aksi di bawah ini tidak bisa dibatalkan
+              Tindakan di bawah ini bersifat permanen dan tidak dapat dibatalkan
             </Typography>
           </Stack>
 
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Pastikan kamu benar-benar yakin sebelum lanjut.
+            Pastikan kamu sudah memahami konsekuensi sebelum melanjutkan.
           </Alert>
 
           <Stack spacing={2}>
             <Button color="error" variant="outlined">
-              Reset Semua Data
+              Reset Seluruh Data
             </Button>
 
             <Button color="error" variant="contained">
-              Hapus Akun Permanen
+              Hapus Akun Secara Permanen
             </Button>
           </Stack>
         </Card>

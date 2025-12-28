@@ -61,11 +61,67 @@ export const theme = createTheme({
         },
       },
     },
+    /* ================= BUTTON ================= */
+    MuiButton: {
+      defaultProps: {
+        disableElevation: true,
+      },
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          padding: "8px 18px",
+          fontWeight: 600,
+          boxShadow: "none",
+          transition:
+            "background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease",
+
+          "&:hover": {
+            boxShadow: "0px 8px 24px rgba(0,0,0,0.08)",
+            transform: "translateY(-1px)",
+          },
+
+          "&:active": {
+            transform: "translateY(0)",
+          },
+        },
+
+        /* CONTAINED */
+        contained: {
+          boxShadow: "0px 4px 12px rgba(32,101,209,0.24)",
+          "&:hover": {
+            boxShadow: "0px 8px 28px rgba(32,101,209,0.32)",
+          },
+        },
+
+        /* OUTLINED */
+        outlined: {
+          borderColor: "rgba(0,0,0,0.12)",
+          "&:hover": {
+            borderColor: "rgba(0,0,0,0.2)",
+            backgroundColor: "rgba(0,0,0,0.02)",
+          },
+        },
+
+        /* TEXT */
+        text: {
+          "&:hover": {
+            backgroundColor: "rgba(0,0,0,0.04)",
+          },
+        },
+
+        /* SIZE */
+        sizeLarge: {
+          padding: "12px 22px",
+          fontSize: "0.95rem",
+        },
+      },
+    },
   },
 
   typography: {
     fontFamily: ['Inter', 'system-ui', 'sans-serif'].join(','),
     h4: { fontWeight: 600 },
     h6: { fontWeight: 600 },
+    button: {textTransform: 'none'}
   },
 });

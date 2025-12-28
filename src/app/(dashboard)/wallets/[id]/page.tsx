@@ -1,317 +1,305 @@
-'use client';
+"use client";
 
 import {
   Box,
+  Card,
   Typography,
-  Paper,
-  Grid,
-  Chip,
-  Button,
   IconButton,
   Menu,
   MenuItem,
-  TableBody,
-  TableCell,
-  TableRow,
-  Avatar,
-} from '@mui/material';
+  Grid,
+  Chip,
+  CircularProgress,
+  Stack,
+  LinearProgress,
+} from "@mui/material";
 
-import PageWrapper from '@/components/layouts/pageWrapper';
-import { MainTable } from '@/components/common/MainTable';
+import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
+import AccountBalanceRoundedIcon from "@mui/icons-material/AccountBalanceRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
-import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
-import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
-import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
-import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
-import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
+import { useState } from "react";
+import PageWrapper from "@/components/layouts/pageWrapper";
+import Link from "next/link";
 
-import { useState } from 'react';
+import AddWalletDialog from "@/components/ui/wallets/AddWalletDialog";
+import {
+  useDeleteWalletMutation,
+  useGetWalletsQuery,
+} from "@/redux/slices/walletApi";
+import MotionCard from "@/components/motions/MotionCard";
 
-// ======================= DUMMY DATA =======================
-const wallet = {
-  id: '1',
-  name: 'Main Wallet',
-  type: 'cash',
-  balance: 1250000,
-  inflow: 2500000,
-  outflow: 900000,
-  transactionsCount: 22,
-  lastUpdated: '2025-11-12',
-};
-
-const transactions = [
-  {
-    id: '1',
-    title: 'Salary November',
-    type: 'INCOME',
-    amount: 8500000,
-    date: '2025-11-10',
-    category: 'Salary',
-  },
-  {
-    id: '2',
-    title: 'Grocery – Indomaret',
-    type: 'EXPENSE',
-    amount: -150000,
-    date: '2025-11-12',
-    category: 'Food',
-  },
-  {
-    id: '3',
-    title: 'Grab Ride',
-    type: 'EXPENSE',
-    amount: -20000,
-    date: '2025-11-09',
-    category: 'Transport',
-  },
-];
-
-const typeColors: any = {
-  INCOME: { bg: '#E8F5E9', text: '#2E7D32', icon: <TrendingUpRoundedIcon /> },
-  EXPENSE: { bg: '#FFEBEE', text: '#C62828', icon: <TrendingDownRoundedIcon /> },
-  TRANSFER: { bg: '#E3F2FD', text: '#1565C0', icon: <CompareArrowsRoundedIcon /> },
-};
-
+/* ======================= ICON MAP ======================= */
 const walletIcons: any = {
-  cash: <AccountBalanceWalletRoundedIcon />,
-  bank: <AccountBalanceRoundedIcon />,
-  ewallet: <AccountBalanceWalletRoundedIcon />,
-  credit: <CreditCardRoundedIcon />,
+  CASH: <AccountBalanceWalletRoundedIcon />,
+  BANK: <AccountBalanceRoundedIcon />,
+  EWALLET: <AccountBalanceWalletRoundedIcon />,
+  CREDIT: <CreditCardRoundedIcon />,
 };
 
-const walletColors: any = {
-  cash: { color: '#1565C0', gradient: 'linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%)' },
-  bank: { color: '#2E7D32', gradient: 'linear-gradient(135deg, #66bb6a 0%, #43a047 100%)' },
-  ewallet: { color: '#F9A825', gradient: 'linear-gradient(135deg, #fdd835 0%, #fbc02d 100%)' },
-  credit: { color: '#C62828', gradient: 'linear-gradient(135deg, #ef5350 0%, #e53935 100%)' },
+/* ======================= STYLE MAP ======================= */
+const walletStyles: any = {
+  CASH: {
+    label: "Tunai",
+    desc: "Penggunaan harian",
+    bg: "#E3F2FD",
+    color: "#1565C0",
+  },
+  BANK: {
+    label: "Rekening Bank",
+    desc: "Penyimpanan utama",
+    bg: "#E8F5E9",
+    color: "#2E7D32",
+  },
+  EWALLET: {
+    label: "Dompet Digital",
+    desc: "Transaksi cepat",
+    bg: "#FFFDE7",
+    color: "#F9A825",
+  },
+  CREDIT: {
+    label: "Kartu Kredit",
+    desc: "Perlu pengelolaan ekstra",
+    bg: "#FFEBEE",
+    color: "#C62828",
+  },
 };
 
-export default function WalletDetailPage() {
+export default function WalletsPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const style = walletColors[wallet.type];
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
 
-  const handleMenu = (e: any) => setAnchorEl(e.currentTarget);
-  const handleClose = () => setAnchorEl(null);
+  const { data: wallets = [], isLoading } = useGetWalletsQuery();
+  const [deleteWallet] = useDeleteWalletMutation();
+
+  const openMenu = (e: any, id: string) => {
+    setAnchorEl(e.currentTarget);
+    setActiveId(id);
+  };
+
+  const closeMenu = () => {
+    setAnchorEl(null);
+    setActiveId(null);
+  };
+
+  const handleEdit = () => {
+    const w = wallets.find((x: any) => x.id === activeId);
+    setEditData(w);
+    setOpenDialog(true);
+    closeMenu();
+  };
+
+  const handleDelete = async () => {
+    await deleteWallet(activeId);
+    closeMenu();
+  };
+
+  /* ======================= LOADING ======================= */
+  if (isLoading)
+    return (
+      <PageWrapper title="Dompet">
+        <Box display="flex" justifyContent="center" mt={10}>
+          <CircularProgress />
+        </Box>
+      </PageWrapper>
+    );
 
   return (
     <PageWrapper
-      title={wallet.name}
+      title="Dompet"
       actions={{
-        label: 'Add Transaction',
-        href: '/transactions/create',
+        label: "Tambah Dompet",
+        onClick: () => {
+          setEditData(null);
+          setOpenDialog(true);
+        },
+        icon: <AddRoundedIcon />,
       }}
     >
-      {/* ========================= HEADER CARD ========================= */}
-      <Paper
+      {/* ================= INFO ================= */}
+      <Card
         sx={{
-          p: 4,
-          borderRadius: 4,
-          mb: 4,
-          color: 'white',
-          background: style.gradient,
-          boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+          p: 2.5,
+          mb: 3,
+          borderRadius: 3,
+          bgcolor: "background.default",
         }}
       >
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Box display="flex" gap={2} alignItems="center">
-              <Avatar
+        <Typography fontWeight={700}>
+          Kelola Dompet
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Pisahkan sumber dana agar arus keuangan lebih
+          mudah dipantau dan dikontrol.
+        </Typography>
+      </Card>
+
+      {/* ================= WALLET LIST ================= */}
+      <Grid container spacing={3}>
+        {wallets.map((wallet: any) => {
+          const style = walletStyles[wallet.type];
+          const isNegative =
+            wallet.type === "CREDIT" && wallet.balance < 0;
+
+          return (
+            <Grid
+              key={wallet.id}
+              size={{ xs: 12, sm: 6, md: 4 }}
+            >
+              <MotionCard
                 sx={{
-                  width: 62,
-                  height: 62,
-                  bgcolor: 'rgba(255,255,255,0.2)',
+                  p: 3,
                 }}
               >
-                {walletIcons[wallet.type]}
-              </Avatar>
+                {/* MENU */}
+                <IconButton
+                  size="small"
+                  sx={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                  }}
+                  onClick={(e) =>
+                    openMenu(e, wallet.id)
+                  }
+                >
+                  <MoreVertRoundedIcon fontSize="small" />
+                </IconButton>
 
-              <Box>
-                <Typography variant="h4" fontWeight={700}>
-                  {wallet.name}
-                </Typography>
-                <Typography>
-                  Last updated: {wallet.lastUpdated}
-                </Typography>
-              </Box>
-            </Box>
+                <Stack spacing={1.5}>
+                  {/* ICON */}
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 2,
+                      bgcolor: style.bg,
+                      color: style.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {walletIcons[wallet.type]}
+                  </Box>
 
-            {/* Balance */}
-            <Typography variant="h3" mt={3} fontWeight={700}>
-              Rp {wallet.balance.toLocaleString('id-ID')}
-            </Typography>
-          </Grid>
+                  {/* NAME */}
+                  <Link
+                    href={`/wallets/${wallet.id}`}
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
+                    <Typography
+                      fontWeight={700}
+                      fontSize={16}
+                    >
+                      {wallet.name}
+                    </Typography>
+                  </Link>
 
-          <Grid size={{ xs: 12, md: 4 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <IconButton
-              onClick={handleMenu}
-              sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
-            >
-              <MoreVertRoundedIcon />
-            </IconButton>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* ========================= ANALYTICS CARDS ========================= */}
-      <Grid container spacing={3} mb={4}>
-        {/* Inflow */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            sx={{
-              p: 3,
-              borderRadius: 4,
-              boxShadow: 'var(--mui-shadow-lg)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between">
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Total Inflow (bulan ini)
-                </Typography>
-                <Typography variant="h5" mt={1} fontWeight={700} color="success.main">
-                  + Rp {wallet.inflow.toLocaleString('id-ID')}
-                </Typography>
-              </Box>
-
-              <Avatar sx={{ bgcolor: 'success.light', color: 'success.dark' }}>
-                <TrendingUpRoundedIcon />
-              </Avatar>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Outflow */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            sx={{
-              p: 3,
-              borderRadius: 4,
-              boxShadow: 'var(--mui-shadow-lg)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between">
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Total Outflow (bulan ini)
-                </Typography>
-                <Typography variant="h5" mt={1} fontWeight={700} color="error.main">
-                  - Rp {wallet.outflow.toLocaleString('id-ID')}
-                </Typography>
-              </Box>
-
-              <Avatar sx={{ bgcolor: 'error.light', color: 'error.dark' }}>
-                <TrendingDownRoundedIcon />
-              </Avatar>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Total Transactions */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            sx={{
-              p: 3,
-              borderRadius: 4,
-              boxShadow: 'var(--mui-shadow-lg)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between">
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Jumlah Transaksi
-                </Typography>
-                <Typography variant="h5" mt={1} fontWeight={700}>
-                  {wallet.transactionsCount}
-                </Typography>
-              </Box>
-
-              <Avatar sx={{ bgcolor: '#E3F2FD', color: '#1565C0' }}>
-                <CompareArrowsRoundedIcon />
-              </Avatar>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* ========================= TRANSACTIONS TABLE ========================= */}
-      <Paper
-        sx={{
-          // p: 3,
-          borderRadius: 4,
-          boxShadow: 'var(--mui-shadow-lg)',
-        }}
-      >
-        <Typography variant="h6" mb={2} fontWeight={700} px={3} pt={3}>
-          Recent Transactions
-        </Typography>
-
-        <MainTable
-          header={['Title', 'Category', 'Type', 'Amount', 'Date', 'Actions']}
-          hasPagination
-          rowsCount={transactions.length}
-          page={0}
-          pageSize={5}
-        >
-          <TableBody>
-            {transactions.map((t) => (
-              <TableRow key={t.id} hover>
-                {/* Title */}
-                <TableCell sx={{ fontWeight: 600 }}>{t.title}</TableCell>
-
-                {/* Category */}
-                <TableCell>
-                  <Chip label={t.category} size="small" />
-                </TableCell>
-
-                {/* Type */}
-                <TableCell>
+                  {/* TYPE */}
                   <Chip
-                    label={t.type}
+                    label={style.label}
                     size="small"
                     sx={{
-                      bgcolor: typeColors[t.type].bg,
-                      color: typeColors[t.type].text,
+                      width: "fit-content",
+                      bgcolor: style.bg,
+                      color: style.color,
                       fontWeight: 600,
-                      borderRadius: 1,
                     }}
                   />
-                </TableCell>
 
-                {/* Amount */}
-                <TableCell sx={{ fontWeight: 700 }}>
-                  {t.amount < 0 ? (
-                    <span style={{ color: '#C62828' }}>
-                      - Rp {Math.abs(t.amount).toLocaleString('id-ID')}
-                    </span>
-                  ) : (
-                    <span style={{ color: '#2E7D32' }}>
-                      + Rp {t.amount.toLocaleString('id-ID')}
-                    </span>
-                  )}
-                </TableCell>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                  >
+                    {style.desc}
+                  </Typography>
 
-                {/* Date */}
-                <TableCell>{t.date}</TableCell>
+                  {/* BALANCE */}
+                  <Typography
+                    variant="h6"
+                    fontWeight={700}
+                    mt={1}
+                    color={
+                      isNegative
+                        ? "error.main"
+                        : "text.primary"
+                    }
+                  >
+                    Rp{" "}
+                    {Math.abs(wallet.balance).toLocaleString(
+                      "id-ID"
+                    )}
+                  </Typography>
 
-                {/* Actions */}
-                <TableCell align="right">
-                  <IconButton onClick={handleMenu}>
-                    <MoreVertRoundedIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </MainTable>
-      </Paper>
+                  {/* STATUS */}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    {isNegative
+                      ? "Saldo melebihi batas aman"
+                      : "Saldo dalam kondisi baik"}
+                  </Typography>
 
-      {/* MENU */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem>Edit Transaction</MenuItem>
-        <MenuItem>Delete Transaction</MenuItem>
+                  {/* INDICATOR */}
+                  <LinearProgress
+                    variant="determinate"
+                    value={
+                      wallet.balance <= 0
+                        ? 5
+                        : Math.min(
+                            100,
+                            wallet.balance / 100000
+                          )
+                    }
+                    sx={{
+                      height: 6,
+                      borderRadius: 3,
+                      mt: 1,
+                      bgcolor: "#eee",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: style.color,
+                      },
+                    }}
+                  />
+                </Stack>
+              </MotionCard>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+      {/* ================= MENU ================= */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={closeMenu}
+      >
+        <MenuItem onClick={handleEdit}>
+          Edit Dompet
+        </MenuItem>
+        <MenuItem
+          sx={{ color: "error.main" }}
+          onClick={handleDelete}
+        >
+          Hapus Dompet
+        </MenuItem>
       </Menu>
+
+      {/* ================= ADD / EDIT DIALOG ================= */}
+      <AddWalletDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        editData={editData}
+      />
     </PageWrapper>
   );
 }

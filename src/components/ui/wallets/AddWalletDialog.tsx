@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Button,
   TextField,
   Grid,
@@ -15,8 +14,12 @@ import {
   Divider,
   Fade,
   Chip,
+  IconButton,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import WalletIcon from "@mui/icons-material/Wallet";
 import AccountBalanceRoundedIcon from "@mui/icons-material/AccountBalanceRounded";
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
@@ -28,39 +31,46 @@ import {
   useUpdateWalletMutation,
 } from "@/redux/slices/walletApi";
 
-// ======================= STORAGE TYPES =======================
+/* ================= WALLET TYPES ================= */
 const typeOptions = [
   {
     value: "CASH",
-    label: "💼 Inventory",
-    desc: "Akses cepat untuk transaksi harian",
+    label: "Tunai",
+    desc: "Untuk transaksi harian",
     icon: <WalletIcon />,
-    color: "#1976d2",
+    color: "#1565C0",
   },
   {
     value: "BANK",
-    label: "🏦 Vault",
-    desc: "Penyimpanan aman & stabil",
+    label: "Rekening Bank",
+    desc: "Penyimpanan utama",
     icon: <AccountBalanceRoundedIcon />,
-    color: "#2e7d32",
+    color: "#2E7D32",
   },
   {
     value: "EWALLET",
-    label: "⚡ Fast Access",
-    desc: "Cepat & fleksibel",
+    label: "Dompet Digital",
+    desc: "Pembayaran cepat & praktis",
     icon: <AccountBalanceWalletRoundedIcon />,
-    color: "#f9a825",
+    color: "#F9A825",
   },
   {
     value: "CREDIT",
-    label: "☠️ Debt Zone",
-    desc: "Zona berbahaya, gunakan dengan bijak",
+    label: "Kartu Kredit",
+    desc: "Perlu pengelolaan ekstra",
     icon: <CreditCardRoundedIcon />,
-    color: "#c62828",
+    color: "#C62828",
   },
 ];
 
-export default function AddWalletDialog({ open, onClose, editData }: any) {
+export default function AddWalletDialog({
+  open,
+  onClose,
+  editData,
+}: any) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [form, setForm] = useState({
     name: "",
     type: "",
@@ -73,7 +83,7 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
 
   const isEdit = Boolean(editData);
 
-  // ======================= PREFILL =======================
+  /* ================= PREFILL ================= */
   useEffect(() => {
     if (editData) {
       setForm({
@@ -83,15 +93,21 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
         notes: editData.notes ?? "",
       });
     } else {
-      setForm({ name: "", type: "", balance: "", notes: "" });
+      setForm({
+        name: "",
+        type: "",
+        balance: "",
+        notes: "",
+      });
     }
   }, [editData]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: any) =>
     setForm((prev) => ({ ...prev, [field]: value }));
-  };
 
-  const selectedType = typeOptions.find((t) => t.value === form.type);
+  const selectedType = typeOptions.find(
+    (t) => t.value === form.type
+  );
 
   const handleSubmit = async () => {
     if (isEdit) {
@@ -108,137 +124,165 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
       onClose={onClose}
       maxWidth="sm"
       fullWidth
+      fullScreen={isMobile}
       TransitionComponent={Fade}
       PaperProps={{
-        sx: { borderRadius: 4, overflow: "hidden" },
+        sx: {
+          borderRadius: isMobile ? 0 : 4,
+          overflow: "hidden",
+        },
       }}
     >
       {/* ================= HEADER ================= */}
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          {isEdit ? "✨ Upgrade Storage" : "💰 Bangun Storage Baru"}
-        </Typography>
-        <Typography color="text.secondary">
-          Atur tempat penyimpanan resource kamu
-        </Typography>
+      <Box
+        sx={{
+          px: 3,
+          py: 2.5,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Box>
+          <Typography fontWeight={800}>
+            {isEdit ? "Edit Dompet" : "Tambah Dompet"}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
+            Atur sumber dana untuk pengelolaan keuangan
+          </Typography>
+        </Box>
+
+        <IconButton size="small" onClick={onClose}>
+          <CloseRoundedIcon />
+        </IconButton>
       </Box>
 
-      <Divider />
-
       {/* ================= CONTENT ================= */}
-      <DialogContent sx={{ py: 4, px: 4 }}>
+      <DialogContent sx={{ px: 3, py: 3 }}>
         <Stack spacing={3}>
-          {/* NPC MESSAGE */}
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              bgcolor: "#F4F6FF",
-            }}
-          >
-            <Typography fontWeight={600}>🧠 DompetBot:</Typography>
-            <Typography variant="body2" color="text.secondary">
-              “Pisahin storage bikin resource kamu lebih gampang dikontrol 🎯”
-            </Typography>
-          </Box>
-
-          {/* STORAGE NAME */}
+          {/* NAME */}
           <TextField
-            label="Nama Storage"
+            label="Nama Dompet"
+            placeholder="Contoh: BCA, Cash, OVO"
             fullWidth
             required
-            placeholder="Contoh: Dompet Utama, Gaji, Jajan"
-            helperText="Bikin nama yang gampang kamu kenali"
             value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
+            onChange={(e) =>
+              handleChange("name", e.target.value)
+            }
           />
 
-          {/* STORAGE TYPE */}
+          {/* TYPE */}
           <Box>
-            <Typography mb={1} fontWeight={600}>
-              Pilih Tipe Storage
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Setiap storage punya karakter berbeda
+            <Typography
+              fontWeight={700}
+              mb={1}
+            >
+              Tipe Dompet
             </Typography>
 
             <Grid container spacing={2}>
-              {typeOptions.map((t) => (
-                <Grid size={{ xs: 6 }} key={t.value}>
-                  <Box
-                    onClick={() => handleChange("type", t.value)}
-                    sx={{
-                      borderRadius: 3,
-                      p: 2,
-                      cursor: "pointer",
-                      border:
-                        form.type === t.value
-                          ? `2px solid ${t.color}`
-                          : "1px solid #eee",
-                      transition: "0.2s",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      "&:hover": {
-                        border:
-                          form.type === t.value
-                            ? `2px solid ${t.color}`
-                            : `1px solid ${t.color}`,
-                      },
-                    }}
-                  >
-                    <Avatar sx={{ bgcolor: t.color, color: "white" }}>
-                      {t.icon}
-                    </Avatar>
+              {typeOptions.map((t) => {
+                const active = form.type === t.value;
 
-                    <Box>
-                      <Typography fontWeight={600}>{t.label}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {t.desc}
-                      </Typography>
+                return (
+                  <Grid
+                    key={t.value}
+                    size={{ xs: 12, sm: 6 }}
+                  >
+                    <Box
+                      onClick={() =>
+                        handleChange("type", t.value)
+                      }
+                      sx={{
+                        p: 2,
+                        borderRadius: 3,
+                        cursor: "pointer",
+                        border: "1px solid",
+                        borderColor: active
+                          ? t.color
+                          : "divider",
+                        bgcolor: active
+                          ? t.color + "0F"
+                          : "transparent",
+                        transition: "all .2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        "&:hover": {
+                          borderColor: t.color,
+                        },
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          bgcolor: t.color,
+                          color: "#fff",
+                        }}
+                      >
+                        {t.icon}
+                      </Avatar>
+
+                      <Box>
+                        <Typography
+                          fontWeight={600}
+                        >
+                          {t.label}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                        >
+                          {t.desc}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </Grid>
-              ))}
+                  </Grid>
+                );
+              })}
             </Grid>
           </Box>
 
           {/* BALANCE */}
           <TextField
-            label="Resource Awal (Rp)"
+            label="Saldo Awal (Rp)"
             type="number"
             fullWidth
-            helperText="Jumlah resource saat storage ini dibuat"
             value={form.balance}
-            onChange={(e) => handleChange("balance", e.target.value)}
+            onChange={(e) =>
+              handleChange("balance", e.target.value)
+            }
+            helperText="Isi 0 jika tidak ada saldo awal"
           />
 
           {/* NOTES */}
           <TextField
-            label="Catatan Tambahan (Opsional)"
+            label="Catatan (Opsional)"
             fullWidth
             multiline
-            minRows={3}
-            placeholder="Contoh: khusus gaji, jangan dipakai jajan"
+            minRows={isMobile ? 3 : 4}
             value={form.notes}
-            onChange={(e) => handleChange("notes", e.target.value)}
+            onChange={(e) =>
+              handleChange("notes", e.target.value)
+            }
           />
 
           {/* PREVIEW */}
           {selectedType && form.name && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" mb={1}>
-                🔍 Preview Storage
-              </Typography>
-              <Chip
-                label={`${selectedType.label} • ${form.name}`}
-                sx={{
-                  bgcolor: selectedType.color + "22",
-                  color: selectedType.color,
-                  fontWeight: 600,
-                }}
-              />
-            </Box>
+            <Chip
+              label={`${selectedType.label} • ${form.name}`}
+              sx={{
+                width: "fit-content",
+                bgcolor: selectedType.color + "14",
+                color: selectedType.color,
+                fontWeight: 600,
+              }}
+            />
           )}
         </Stack>
       </DialogContent>
@@ -246,26 +290,29 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
       <Divider />
 
       {/* ================= ACTION ================= */}
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions
+        sx={{
+          px: 3,
+          py: 2,
+          justifyContent: "space-between",
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 1 : 0,
+        }}
+      >
         <Button
+          fullWidth={isMobile}
           onClick={onClose}
-          sx={{ textTransform: "none", fontWeight: 600 }}
         >
           Batal
         </Button>
 
         <Button
+          fullWidth={isMobile}
           variant="contained"
-          sx={{
-            textTransform: "none",
-            fontWeight: 700,
-            px: 4,
-            borderRadius: 2,
-          }}
-          onClick={handleSubmit}
           disabled={!form.name || !form.type}
+          onClick={handleSubmit}
         >
-          {isEdit ? "Upgrade Storage 🚀" : "Bangun Storage 🎮"}
+          {isEdit ? "Simpan Perubahan" : "Simpan Dompet"}
         </Button>
       </DialogActions>
     </Dialog>

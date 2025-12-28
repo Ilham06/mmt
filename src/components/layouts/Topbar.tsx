@@ -3,33 +3,31 @@
 import {
   AppBar,
   Avatar,
+  Badge,
   Box,
+  Divider,
   IconButton,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
+  Stack,
   Toolbar,
   Typography,
-  Badge,
-  ListItemIcon,
-  Divider,
-  ListItemText,
-  Chip,
-  Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
-import SearchIcon from "@mui/icons-material/Search";
+import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
-import MenuIcon from "@mui/icons-material/Menu";
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { sidebarWidth } from "./Sidebar";
-import { useRouter } from "next/navigation";
 
 export function Topbar({
   sidebarOpen,
@@ -39,33 +37,34 @@ export function Topbar({
   onToggleSidebar: () => void;
 }) {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [anchorNotif, setAnchorNotif] = useState<null | HTMLElement>(null);
-  const [anchorProfile, setAnchorProfile] = useState<null | HTMLElement>(null);
+  const [anchorProfile, setAnchorProfile] =
+    useState<null | HTMLElement>(null);
 
   const openNotif = Boolean(anchorNotif);
   const openProfile = Boolean(anchorProfile);
 
-  // ================= MOCK PLAYER STATE (NANTI GANTI STORE) =================
-  const player = {
-    name: "Dompet Survivor",
-    level: 3,
-    streak: 4,
-    initials: "DS",
+  // ================= MOCK USER =================
+  const user = {
+    name: "Ilham",
+    initials: "IM",
   };
 
-  // ================= MOCK EVENTS / NOTIFICATIONS =================
+  // ================= MOCK NOTIFICATIONS =================
   const notifications = [
     {
       id: 1,
-      title: "Quest Progress 🎯",
-      message: "No Jajan 3 Hari hampir selesai!",
+      title: "Pengeluaran hari ini",
+      message: "Pengeluaran kamu masih aman 👍",
       time: "Hari ini",
     },
     {
       id: 2,
-      title: "Streak Aman 🔥",
-      message: "Kamu berhasil jaga streak hari ini",
+      title: "Catatan konsisten",
+      message: "Kamu mencatat transaksi 4 hari berturut-turut",
       time: "1 jam lalu",
     },
   ];
@@ -75,7 +74,6 @@ export function Topbar({
       method: "POST",
       credentials: "include",
     });
-
     router.push("/login");
   };
 
@@ -86,78 +84,76 @@ export function Topbar({
         position="fixed"
         elevation={0}
         sx={{
-          ml: sidebarOpen ? `${sidebarWidth}px` : 0,
-          width: sidebarOpen ? `calc(100% - ${sidebarWidth}px)` : "100%",
+          ml: !isMobile && sidebarOpen ? `${sidebarWidth}px` : 0,
+          width:
+            !isMobile && sidebarOpen
+              ? `calc(100% - ${sidebarWidth}px)`
+              : "100%",
           bgcolor: "background.paper",
           color: "text.primary",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           transition: "all .2s ease",
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
           {/* ================= LEFT ================= */}
-          {/* LEFT */}
           <Stack direction="row" spacing={1.5} alignItems="center">
             <IconButton onClick={onToggleSidebar}>
               <MenuIcon />
             </IconButton>
 
-            <Stack spacing={0.5}>
-              <Typography
-                variant="subtitle1"
-                fontWeight={800}
-                sx={{ color: "primary.main", letterSpacing: 0.4 }}
-              >
-                🎮 Money Tracker
+            {!isMobile ? (
+              <Stack spacing={0}>
+                <Typography
+                  fontWeight={800}
+                  letterSpacing={0.3}
+                >
+                  Money Tracker
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                >
+                  Kelola keuangan harianmu
+                </Typography>
+              </Stack>
+            ) : (
+              <Typography fontWeight={800}>
+                Money
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Player Hub
-              </Typography>
-            </Stack>
+            )}
           </Stack>
 
           {/* ================= RIGHT ================= */}
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            {/* PLAYER MINI STATS */}
-            <Stack direction="row" spacing={1}>
-              <Chip
-                size="small"
-                icon={<EmojiEventsRoundedIcon />}
-                label={`Lv ${player.level}`}
-                color="primary"
-                sx={{ fontWeight: 700 }}
-              />
-              <Chip
-                size="small"
-                icon={<LocalFireDepartmentRoundedIcon />}
-                label={`${player.streak}🔥`}
-                color="warning"
-                sx={{ fontWeight: 700 }}
-              />
-            </Stack>
-
-            {/* SEARCH */}
-            <IconButton>
-              <SearchIcon />
-            </IconButton>
-
+          <Stack direction="row" spacing={1} alignItems="center">
             {/* NOTIFICATION */}
-            <IconButton onClick={(e) => setAnchorNotif(e.currentTarget)}>
-              <Badge badgeContent={notifications.length} color="error">
+            <IconButton
+              onClick={(e) => setAnchorNotif(e.currentTarget)}
+            >
+              <Badge
+                badgeContent={notifications.length}
+                color="error"
+              >
                 <NotificationsNoneIcon />
               </Badge>
             </IconButton>
 
             {/* PROFILE */}
-            <IconButton onClick={(e) => setAnchorProfile(e.currentTarget)}>
+            <IconButton
+              onClick={(e) =>
+                setAnchorProfile(e.currentTarget)
+              }
+            >
               <Avatar
                 sx={{
-                  width: 34,
-                  height: 34,
+                  width: 32,
+                  height: 32,
                   bgcolor: "primary.main",
                   fontWeight: 700,
                 }}
               >
-                {player.initials}
+                {user.initials}
               </Avatar>
             </IconButton>
           </Stack>
@@ -172,44 +168,57 @@ export function Topbar({
         PaperProps={{
           sx: {
             mt: 1,
-            width: 320,
+            width: isMobile ? "90vw" : 320,
             borderRadius: 3,
             p: 1,
           },
         }}
       >
         <Typography fontWeight={800} px={2} py={1}>
-          Event Log
+          Notifikasi
         </Typography>
 
         <Divider />
 
-        {notifications.map((n) => (
-          <MenuItem key={n.id} sx={{ borderRadius: 2 }}>
-            <ListItemText
-              primary={
-                <Typography fontWeight={700} fontSize={14}>
-                  {n.title}
-                </Typography>
-              }
-              secondary={
-                <>
-                  <Typography variant="body2" color="text.secondary">
-                    {n.message}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {n.time}
-                  </Typography>
-                </>
-              }
-            />
-          </MenuItem>
-        ))}
-
-        {notifications.length === 0 && (
-          <Typography textAlign="center" py={2} color="text.secondary">
-            Aman… belum ada event
+        {notifications.length === 0 ? (
+          <Typography
+            textAlign="center"
+            py={2}
+            color="text.secondary"
+          >
+            Belum ada notifikasi
           </Typography>
+        ) : (
+          notifications.map((n) => (
+            <MenuItem
+              key={n.id}
+              sx={{ borderRadius: 2, py: 1.5 }}
+            >
+              <ListItemText
+                primary={
+                  <Typography fontWeight={700} fontSize={14}>
+                    {n.title}
+                  </Typography>
+                }
+                secondary={
+                  <>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      {n.message}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      {n.time}
+                    </Typography>
+                  </>
+                }
+              />
+            </MenuItem>
+          ))
         )}
       </Menu>
 
@@ -231,14 +240,14 @@ export function Topbar({
           <ListItemIcon>
             <PersonIcon fontSize="small" />
           </ListItemIcon>
-          Profile
+          <ListItemText>Profil</ListItemText>
         </MenuItem>
 
         <MenuItem component={Link} href="/settings">
           <ListItemIcon>
             <SettingsIcon fontSize="small" />
           </ListItemIcon>
-          Settings
+          <ListItemText>Pengaturan</ListItemText>
         </MenuItem>
 
         <Divider sx={{ my: 1 }} />
@@ -250,7 +259,7 @@ export function Topbar({
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />
           </ListItemIcon>
-          Logout
+          <ListItemText>Keluar</ListItemText>
         </MenuItem>
       </Menu>
     </>

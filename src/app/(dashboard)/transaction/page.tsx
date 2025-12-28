@@ -18,12 +18,21 @@ import {
   Select,
   Grid,
   Card,
+  Stack,
+  Divider,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import FlashOnRoundedIcon from "@mui/icons-material/FlashOnRounded";
-import { Add } from "@mui/icons-material";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+
+import ListAltRoundedIcon from "@mui/icons-material/ListAltRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import SwapHorizRoundedIcon from "@mui/icons-material/SwapHorizRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 
 import { useState } from "react";
 import PageWrapper from "@/components/layouts/pageWrapper";
@@ -39,15 +48,16 @@ import {
 import { useRouter } from "next/navigation";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
-import { useXPGainQueue } from "@/hooks/useXpGainToast";
-import XPGainToast from "@/components/game/XpGainToast";
 
 export default function TransactionsPage() {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [tab, setTab] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [walletFilter, setWalletFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
   const [search, setSearch] = useState("");
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -59,6 +69,7 @@ export default function TransactionsPage() {
       type: tab !== "all" ? tab : undefined,
       category: categoryFilter || undefined,
       wallet: walletFilter || undefined,
+      month: monthFilter || undefined,
       q: search || undefined,
     },
     { refetchOnMountOrArgChange: true }
@@ -69,6 +80,7 @@ export default function TransactionsPage() {
   const { data: stats } = useGetTransactionStatsQuery({
     wallet: walletFilter || undefined,
     category: categoryFilter || undefined,
+    // month: monthFilter || undefined,
   });
 
   const [deleteTransaction] = useDeleteTransactionMutation();
@@ -95,83 +107,147 @@ export default function TransactionsPage() {
     router.push(`/transaction/${activeRow}`);
   };
 
-  // const xpToast = useXPGainQueue();
-  // xpToast.showXP(100);
+  // ================= TYPE META (SOFT COLOR) =================
   const typeMeta: any = {
-    INCOME: { label: "⬆️ Buff", bg: "#E8F5E9", color: "#2E7D32" },
-    EXPENSE: { label: "⬇️ Damage", bg: "#FFEBEE", color: "#C62828" },
-    TRANSFER: { label: "🔁 Move", bg: "#E3F2FD", color: "#1565C0" },
+    INCOME: {
+      label: "Pemasukan",
+      bg: "#E8F5E9",
+      color: "#2E7D32",
+    },
+    EXPENSE: {
+      label: "Pengeluaran",
+      bg: "#FDECEA",
+      color: "#C62828",
+    },
+    TRANSFER: {
+      label: "Transfer",
+      bg: "#E3F2FD",
+      color: "#1565C0",
+    },
   };
+
+  // ================= MONTH OPTIONS =================
+  const months = [
+    { value: "01", label: "Januari" },
+    { value: "02", label: "Februari" },
+    { value: "03", label: "Maret" },
+    { value: "04", label: "April" },
+    { value: "05", label: "Mei" },
+    { value: "06", label: "Juni" },
+    { value: "07", label: "Juli" },
+    { value: "08", label: "Agustus" },
+    { value: "09", label: "September" },
+    { value: "10", label: "Oktober" },
+    { value: "11", label: "November" },
+    { value: "12", label: "Desember" },
+  ];
 
   return (
     <PageWrapper
-      title="🧾 Action Log"
-      // subtitle="Semua aksi keuangan kamu tercatat di sini"
+      title="Transaksi"
       actions={{
-        label: "Aksi Baru",
+        label: "Tambah Transaksi",
         href: "/transaction/create",
-        icon: <FlashOnRoundedIcon />,
+        icon: <AddRoundedIcon />,
       }}
     >
-      <XPGainToast xp={200} visible={true} />
-
-      {/* ===== SUMMARY ===== */}
+      {/* ================= SUMMARY ================= */}
       <Grid container spacing={2} mb={3}>
         <Grid size={{ xs: 12 }}>
           <TransactionSummary stats={stats} />
         </Grid>
       </Grid>
 
-      {/* NPC MESSAGE */}
-      <Card
-        sx={{
-          p: 2,
-          mb: 3,
-          borderRadius: 3,
-          bgcolor: "#F4F6FF",
-        }}
-      >
-        <Typography fontWeight={600}>🧠 DompetBot:</Typography>
+      {/* ================= INFO ================= */}
+      <Card sx={{ p: 2.5, mb: 3 }}>
+        <Typography fontWeight={700}>
+          Ringkasan Aktivitas
+        </Typography>
         <Typography variant="body2" color="text.secondary">
-          “Setiap aksi kecil ngaruh ke progres finansial kamu 🎮”
+          Semua pemasukan, pengeluaran, dan transfer kamu tercatat
+          rapi di sini.
         </Typography>
       </Card>
 
-      {/* ===== FILTER + LIST ===== */}
-      <Box
-        sx={{
-          borderRadius: 4,
-          bgcolor: "background.paper",
-          boxShadow: "0 12px 32px rgba(0,0,0,0.05)",
-        }}
-      >
+      {/* ================= FILTER + TABLE ================= */}
+      <Box sx={{ borderRadius: 4, bgcolor: "background.paper" }}>
         {/* FILTER */}
         <Box p={3}>
+          {/* TABS */}
           <Tabs
             value={tab}
             onChange={(_, v) => setTab(v)}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile ? "auto" : false}
             sx={{
               mb: 3,
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontWeight: 700,
+                minHeight: 48,
               },
             }}
           >
-            <Tab label="Semua Aksi" value="all" />
-            <Tab label="⬆️ Buff" value="INCOME" />
-            <Tab label="⬇️ Damage" value="EXPENSE" />
-            <Tab label="🔁 Move" value="TRANSFER" />
+            <Tab
+              value="all"
+              label="Semua"
+              icon={<ListAltRoundedIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              value="INCOME"
+              label="Pemasukan"
+              icon={<TrendingUpRoundedIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              value="EXPENSE"
+              label="Pengeluaran"
+              icon={<TrendingDownRoundedIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              value="TRANSFER"
+              label="Transfer"
+              icon={<SwapHorizRoundedIcon />}
+              iconPosition="start"
+            />
           </Tabs>
 
-          <Box display="flex" gap={2} flexWrap="wrap">
-            <FormControl size="small" sx={{ width: 180 }}>
+          {/* FILTER ROW */}
+          <Stack
+            direction={isMobile ? "column" : "row"}
+            spacing={2}
+          >
+            {/* MONTH */}
+            <FormControl size="small" sx={{ width: isMobile ? "100%" : 160 }}>
+              <Select
+                displayEmpty
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <CalendarMonthRoundedIcon fontSize="small" />
+                  </InputAdornment>
+                }
+              >
+                <MenuItem value="">Semua Bulan</MenuItem>
+                {months.map((m) => (
+                  <MenuItem key={m.value} value={m.value}>
+                    {m.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* CATEGORY */}
+            <FormControl size="small" sx={{ width: isMobile ? "100%" : 180 }}>
               <Select
                 displayEmpty
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <MenuItem value="">Semua Skill</MenuItem>
+                <MenuItem value="">Semua Kategori</MenuItem>
                 {categories.map((c: any) => (
                   <MenuItem key={c.id} value={c.id}>
                     {c.name}
@@ -180,13 +256,14 @@ export default function TransactionsPage() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ width: 180 }}>
+            {/* WALLET */}
+            <FormControl size="small" sx={{ width: isMobile ? "100%" : 180 }}>
               <Select
                 displayEmpty
                 value={walletFilter}
                 onChange={(e) => setWalletFilter(e.target.value)}
               >
-                <MenuItem value="">Semua Storage</MenuItem>
+                <MenuItem value="">Semua Dompet</MenuItem>
                 {wallets.map((w: any) => (
                   <MenuItem key={w.id} value={w.id}>
                     {w.name}
@@ -195,11 +272,12 @@ export default function TransactionsPage() {
               </Select>
             </FormControl>
 
+            {/* SEARCH */}
             <TextField
               size="small"
-              placeholder="Cari aksi…"
-              sx={{ flex: 1 }}
+              placeholder="Cari transaksi…"
               value={search}
+              fullWidth={isMobile}
               onChange={(e) => setSearch(e.target.value)}
               InputProps={{
                 startAdornment: (
@@ -209,12 +287,14 @@ export default function TransactionsPage() {
                 ),
               }}
             />
-          </Box>
+          </Stack>
         </Box>
 
-        {/* TABLE */}
+        <Divider />
+
+        {/* ================= TABLE ================= */}
         <MainTable
-          header={["Aksi", "Tipe", "Impact", "Tanggal", ""]}
+          header={["Transaksi", "Tipe", "Jumlah", "Tanggal", ""]}
           hasPagination
           rowsCount={data.length}
           page={0}
@@ -223,28 +303,27 @@ export default function TransactionsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5}>Loading aksi…</TableCell>
+                <TableCell colSpan={5}>
+                  Memuat transaksi…
+                </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5}>
-                  Belum ada aksi. Mulai gerak dulu 🎮
+                  Belum ada transaksi untuk filter ini.
                 </TableCell>
               </TableRow>
             ) : (
               data.map((row: any) => {
                 const meta = typeMeta[row.type];
+                const isExpense = row.type === "EXPENSE";
+
                 return (
-                  <TableRow
-                    key={row.id}
-                    hover
-                    sx={{
-                      height: 72,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
+                  <TableRow key={row.id} hover sx={{ height: 72 }}>
                     <TableCell>
-                      <Typography fontWeight={700}>{row.title}</Typography>
+                      <Typography fontWeight={700}>
+                        {row.title}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {row.category?.name} • {row.wallet?.name}
                       </Typography>
@@ -255,9 +334,10 @@ export default function TransactionsPage() {
                         label={meta.label}
                         size="small"
                         sx={{
-                          fontWeight: 700,
+                          fontWeight: 600,
                           bgcolor: meta.bg,
                           color: meta.color,
+                          borderRadius: 2,
                         }}
                       />
                     </TableCell>
@@ -265,11 +345,10 @@ export default function TransactionsPage() {
                     <TableCell>
                       <Typography
                         fontWeight={700}
-                        color={
-                          row.type === "EXPENSE" ? "error.main" : "success.main"
-                        }
+                        fontSize={14}
+                        color={isExpense ? "error.main" : "success.main"}
                       >
-                        {row.type === "EXPENSE" ? "-" : "+"} Rp{" "}
+                        {isExpense ? "-" : "+"} Rp{" "}
                         {Math.abs(row.amount).toLocaleString("id-ID")}
                       </Typography>
                     </TableCell>
@@ -282,7 +361,6 @@ export default function TransactionsPage() {
                       <IconButton
                         size="small"
                         onClick={(e) => handleMenuOpen(e, row.id)}
-                        sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
                       >
                         <MoreVertIcon fontSize="small" />
                       </IconButton>
@@ -295,15 +373,11 @@ export default function TransactionsPage() {
         </MainTable>
       </Box>
 
-      {/* MENU */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={handleEdit}>Edit Aksi ✏️</MenuItem>
+      {/* ================= ROW MENU ================= */}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        <MenuItem onClick={handleEdit}>Edit Transaksi</MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
-          Hapus Aksi ❌
+          Hapus Transaksi
         </MenuItem>
       </Menu>
     </PageWrapper>
