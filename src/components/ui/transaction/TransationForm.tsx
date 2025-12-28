@@ -15,17 +15,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip,
+  Card,
+  CardActionArea,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 
-import PaidIcon from "@mui/icons-material/Paid";
-import CategoryIcon from "@mui/icons-material/Category";
-import NotesIcon from "@mui/icons-material/Notes";
-import TrendingUpRounded from "@mui/icons-material/TrendingUpRounded";
-import TrendingDownRounded from "@mui/icons-material/TrendingDownRounded";
-import SwapHorizRounded from "@mui/icons-material/SwapHorizRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import SwapHorizRoundedIcon from "@mui/icons-material/SwapHorizRounded";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -41,34 +39,35 @@ import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import PageWrapper from "@/components/layouts/pageWrapper";
 
-const todayISO = () => {
-  const d = new Date();
-  return d.toISOString().split("T")[0];
-};
+/* ================= UTIL ================= */
+const todayISO = () => new Date().toISOString().split("T")[0];
 
-
-/* ======================= OPTIONS ======================= */
 const typeOptions = [
-  { value: "INCOME", label: "Masuk", icon: <TrendingUpRounded />, color: "success" },
-  { value: "EXPENSE", label: "Keluar", icon: <TrendingDownRounded />, color: "error" },
-  { value: "TRANSFER", label: "Transfer", icon: <SwapHorizRounded />, color: "primary" },
+  {
+    value: "EXPENSE",
+    label: "Pengeluaran",
+    desc: "Uang keluar dari dompet",
+    icon: <TrendingDownRoundedIcon />,
+    bg: "#FDECEA",
+    color: "#C62828",
+  },
+  {
+    value: "INCOME",
+    label: "Pemasukan",
+    desc: "Uang masuk ke dompet",
+    icon: <TrendingUpRoundedIcon />,
+    bg: "#E8F5E9",
+    color: "#2E7D32",
+  },
+  {
+    value: "TRANSFER",
+    label: "Transfer",
+    desc: "Pindah antar dompet",
+    icon: <SwapHorizRoundedIcon />,
+    bg: "#E3F2FD",
+    color: "#1565C0",
+  },
 ];
-
-/* ======================= SMART REACTION ======================= */
-const getSmartReaction = ({ amount, type }: { amount: number; type: string }) => {
-  if (!amount) return null;
-  if (type === "EXPENSE") {
-    if (amount >= 1_000_000) return "😬 Wah, gede juga pengeluarannya…";
-    if (amount >= 300_000) return "🤔 Lumayan nih, masih aman?";
-    return "👌 Oke, masih wajar";
-  }
-  if (type === "INCOME") {
-    if (amount >= 5_000_000) return "🎉 Gajian besar nih, mantap!";
-    return "💰 Income masuk!";
-  }
-  if (type === "TRANSFER") return "🔁 Pindah dompet, aman~";
-  return null;
-};
 
 export default function TransactionFormPage() {
   const router = useRouter();
@@ -123,20 +122,15 @@ export default function TransactionFormPage() {
   const handleChange = (field: string, value: any) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const smartReaction = getSmartReaction({
-    amount: Number(form.amount),
-    type: form.type,
-  });
-
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     setError("");
-    if (!form.title || !form.amount || !form.date) {
-      return setError("Judul, jumlah, dan tanggal wajib diisi ya 😅");
+    if (!form.amount || !form.date) {
+      return setError("Jumlah dan tanggal wajib diisi.");
     }
 
     const payload: any = {
-      title: form.title,
+      title: form.title || "Transaksi",
       amount: Number(form.amount),
       type: form.type,
       date: form.date,
@@ -153,169 +147,192 @@ export default function TransactionFormPage() {
         : await createTransaction(payload).unwrap();
       router.push("/transaction");
     } catch (err: any) {
-      setError(err.data?.error || "Gagal menyimpan transaksi 😭");
+      setError(err.data?.error || "Gagal menyimpan transaksi.");
     }
   };
 
-  /* ================= RESET ================= */
-  const handleReset = () => {
-    if (!isEdit) {
-      setForm({
-        title: "",
-        amount: "",
-        type: "EXPENSE",
-        categoryId: "",
-        walletId: "",
-        toWalletId: "",
-        date: "",
-        notes: "",
-      });
-    } else if (detail) {
-      setForm({
-        title: detail.title,
-        amount: detail.amount.toString(),
-        type: detail.type,
-        categoryId: detail.categoryId || "",
-        walletId: detail.walletId || detail.fromWalletId || "",
-        toWalletId: detail.toWalletId || "",
-        date: detail.date.split("T")[0],
-        notes: detail.note || "",
-      });
-    }
-  };
-
-  /* ================= DELETE ================= */
   const handleDelete = async () => {
-    try {
-      await deleteTransaction(id!).unwrap();
-      router.push("/transactions");
-    } catch (err: any) {
-      setError(err.data?.error || "Gagal menghapus transaksi.");
-    }
+    await deleteTransaction(id!).unwrap();
+    router.push("/transaction");
   };
 
   return (
-    <PageWrapper title={isEdit ? "Edit Transaksi ✏️" : "Tambah Transaksi 💸"}>
-      <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
-        Santai aja, catat seperlunya. Yang penting kejadian uangnya nggak lupa 😄
-      </Alert>
-
+    <PageWrapper title={isEdit ? "Edit Transaksi" : "Tambah Transaksi"}>
       {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
-      <Paper sx={{ p: isMobile ? 2 : 4, borderRadius: 4 }}>
-        <Stack spacing={isMobile ? 3 : 4}>
-          {/* INFO UTAMA */}
-          <Box>
-            <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
-              <PaidIcon fontSize="small" /> Info Utama
+      <Stack spacing={3}>
+        {/* ================= BASIC INFO ================= */}
+        <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Stack spacing={2}>
+            <Typography fontWeight={700}>
+              Informasi Utama
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Tentukan judul, jumlah, dan tanggal transaksi
             </Typography>
 
-            <Grid container spacing={2} mt={1}>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="Judul transaksi"
+                  label="Judul"
+                  placeholder="Contoh: Makan siang"
                   fullWidth
-                  required
                   value={form.title}
-                  onChange={(e) => handleChange("title", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("title", e.target.value)
+                  }
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   label="Jumlah (Rp)"
                   type="number"
+                  placeholder="0"
                   fullWidth
-                  required
                   value={form.amount}
-                  onChange={(e) => handleChange("amount", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("amount", e.target.value)
+                  }
                 />
-                {smartReaction && (
-                  <Typography variant="caption" color="text.secondary">
-                    {smartReaction}
-                  </Typography>
-                )}
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 3 }}>
+                <TextField
+                  type="date"
+                  label="Tanggal"
+                  InputLabelProps={{ shrink: true }}
+                  fullWidth
+                  value={form.date}
+                  onChange={(e) =>
+                    handleChange("date", e.target.value)
+                  }
+                />
               </Grid>
             </Grid>
-          </Box>
+          </Stack>
+        </Paper>
 
-          <Divider />
-
-          {/* JENIS TRANSAKSI */}
-          <Box>
-            <Typography fontWeight={700}>Jenis Transaksi</Typography>
-
-            <Stack
-              direction={isMobile ? "column" : "row"}
-              spacing={2}
-              mt={2}
-            >
-              {typeOptions.map((t) => (
-                <Chip
-                  key={t.value}
-                  icon={t.icon}
-                  label={t.label}
-                  clickable
-                  color={t.color as any}
-                  variant={form.type === t.value ? "filled" : "outlined"}
-                  onClick={() => handleChange("type", t.value)}
-                  sx={{
-                    px: 2,
-                    py: 2,
-                    fontWeight: 600,
-                    width: isMobile ? "100%" : "auto",
-                    justifyContent: isMobile ? "flex-start" : "center",
-                  }}
-                />
-              ))}
-            </Stack>
-          </Box>
-
-          <Divider />
-
-          {/* DETAIL */}
-          <Box>
-            <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
-              <CategoryIcon fontSize="small" /> Detail Transaksi
+        {/* ================= TYPE ================= */}
+        <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Stack spacing={2}>
+            <Typography fontWeight={700}>
+              Jenis Transaksi
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Pilih jenis transaksi sesuai kejadian
             </Typography>
 
-            <Grid container spacing={2} mt={1}>
+            <Grid container spacing={2}>
+              {typeOptions.map((t) => (
+                <Grid size={{ xs: 12, md: 4 }} key={t.value}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderColor:
+                        form.type === t.value
+                          ? t.color
+                          : "divider",
+                      bgcolor:
+                        form.type === t.value
+                          ? t.bg
+                          : "transparent",
+                    }}
+                  >
+                    <CardActionArea
+                      onClick={() =>
+                        handleChange("type", t.value)
+                      }
+                      sx={{ p: 2 }}
+                    >
+                      <Stack spacing={1}>
+                        <Box
+                          sx={{
+                            color: t.color,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          {t.icon}
+                          <Typography fontWeight={700}>
+                            {t.label}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                        >
+                          {t.desc}
+                        </Typography>
+                      </Stack>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Stack>
+        </Paper>
+
+        {/* ================= FINANCIAL DETAILS ================= */}
+        <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Stack spacing={2}>
+            <Typography fontWeight={700}>
+              Detail Keuangan
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Kategori dan dompet yang terlibat
+            </Typography>
+
+            <Grid container spacing={2}>
               {form.type !== "TRANSFER" && (
                 <>
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
-                      label="Kategori"
                       select
+                      label="Kategori"
                       fullWidth
                       value={form.categoryId}
                       onChange={(e) =>
-                        handleChange("categoryId", e.target.value)
+                        handleChange(
+                          "categoryId",
+                          e.target.value
+                        )
                       }
                     >
                       {categories.map((c: any) => (
-                        <MenuItem key={c.id} value={c.id}>
+                        <MenuItem
+                          key={c.id}
+                          value={c.id}
+                        >
                           {c.name}
                         </MenuItem>
                       ))}
                     </TextField>
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 4 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
-                      label="Wallet"
                       select
+                      label="Dompet"
                       fullWidth
                       value={form.walletId}
                       onChange={(e) =>
-                        handleChange("walletId", e.target.value)
+                        handleChange(
+                          "walletId",
+                          e.target.value
+                        )
                       }
                     >
                       {wallets.map((w: any) => (
-                        <MenuItem key={w.id} value={w.id}>
+                        <MenuItem
+                          key={w.id}
+                          value={w.id}
+                        >
                           {w.name}
                         </MenuItem>
                       ))}
@@ -323,120 +340,74 @@ export default function TransactionFormPage() {
                   </Grid>
                 </>
               )}
-
-              <Grid size={{ xs: 12, md: 4 }}>
-                <TextField
-                  label="Tanggal"
-                  type="date"
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  value={form.date}
-                  onChange={(e) => handleChange("date", e.target.value)}
-                />
-              </Grid>
             </Grid>
-          </Box>
+          </Stack>
+        </Paper>
 
-          <Divider />
-
-          {/* CATATAN */}
-          <Box>
-            <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
-              <NotesIcon fontSize="small" /> Catatan (opsional)
+        {/* ================= NOTES ================= */}
+        <Paper sx={{ p: 3, borderRadius: 3 }}>
+          <Stack spacing={2}>
+            <Typography fontWeight={700}>
+              Catatan Tambahan
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Opsional, untuk informasi tambahan
             </Typography>
 
             <TextField
-              fullWidth
               multiline
-              minRows={isMobile ? 3 : 4}
+              minRows={3}
+              placeholder="Tambahkan catatan jika perlu…"
               value={form.notes}
-              onChange={(e) => handleChange("notes", e.target.value)}
-              placeholder="Catatan tambahan kalau ada…"
+              onChange={(e) =>
+                handleChange("notes", e.target.value)
+              }
             />
-          </Box>
+          </Stack>
+        </Paper>
 
-          <Divider />
+        {/* ================= ACTION ================= */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Button
+            variant="text"
+            onClick={() => router.push("/transaction")}
+          >
+            ← Kembali
+          </Button>
 
-          {/* ACTION */}
-          {isMobile ? (
-            <Stack spacing={2}>
+          <Stack direction="row" spacing={2}>
+            {isEdit && (
               <Button
-                fullWidth
-                size="large"
-                variant="contained"
-                onClick={handleSubmit}
+                color="error"
+                variant="outlined"
+                onClick={() => setDeleteOpen(true)}
               >
-                {isEdit ? "Update Transaksi" : "Simpan Transaksi"}
+                Hapus
               </Button>
+            )}
+            <Button variant="contained" onClick={handleSubmit}>
+              {isEdit ? "Simpan Perubahan" : "Simpan Transaksi"}
+            </Button>
+          </Stack>
+        </Box>
+      </Stack>
 
-              <Stack direction="row" spacing={1}>
-                <Button fullWidth variant="outlined" onClick={handleReset}>
-                  Reset
-                </Button>
-
-                {isEdit && (
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    color="error"
-                    onClick={() => setDeleteOpen(true)}
-                  >
-                    Hapus
-                  </Button>
-                )}
-              </Stack>
-
-              <Button
-                fullWidth
-                variant="text"
-                onClick={() => router.push("/transactions")}
-              >
-                ← Kembali ke daftar
-              </Button>
-            </Stack>
-          ) : (
-            <Box display="flex" justifyContent="space-between">
-              <Button
-                variant="text"
-                onClick={() => router.push("/transactions")}
-              >
-                ← Kembali
-              </Button>
-
-              <Stack direction="row" spacing={2}>
-                <Button variant="outlined" onClick={handleReset}>
-                  Reset
-                </Button>
-
-                {isEdit && (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => setDeleteOpen(true)}
-                  >
-                    Hapus
-                  </Button>
-                )}
-
-                <Button variant="contained" onClick={handleSubmit}>
-                  {isEdit ? "Update" : "Simpan"}
-                </Button>
-              </Stack>
-            </Box>
-          )}
-        </Stack>
-      </Paper>
-
-      {/* DELETE DIALOG */}
-      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} fullWidth>
-        <DialogTitle>Yakin mau hapus?</DialogTitle>
+      {/* ================= DELETE DIALOG ================= */}
+      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
+        <DialogTitle>Hapus Transaksi?</DialogTitle>
         <DialogContent>
           <Typography>
-            Sekali dihapus, transaksi ini nggak bisa balik lagi 😬
+            Transaksi ini akan dihapus permanen.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteOpen(false)}>Batal</Button>
+          <Button onClick={() => setDeleteOpen(false)}>
+            Batal
+          </Button>
           <Button color="error" onClick={handleDelete}>
             Hapus
           </Button>

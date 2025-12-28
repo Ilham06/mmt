@@ -6,10 +6,10 @@ import { Card, CardContent, Typography, Stack, Chip } from "@mui/material";
 export default function CategoryPieChart() {
   // MOCK — nanti bisa dari API
   const data = [
-    { label: "Food", value: 40, color: "#FF7043" },
+    { label: "Makan", value: 40, color: "#FF7043" },
     { label: "Transport", value: 20, color: "#42A5F5" },
-    { label: "Shopping", value: 25, color: "#AB47BC" },
-    { label: "Bills", value: 15, color: "#26A69A" },
+    { label: "Belanja", value: 25, color: "#AB47BC" },
+    { label: "Tagihan", value: 15, color: "#26A69A" },
   ];
 
   const top = [...data].sort((a, b) => b.value - a.value)[0];
@@ -18,16 +18,19 @@ export default function CategoryPieChart() {
     <Card sx={{ p: 3, borderRadius: 4 }}>
       <CardContent sx={{ p: 0 }}>
         <Stack spacing={2}>
+          {/* ================= TITLE ================= */}
           <Typography fontWeight={800}>
-            💥 Damage Source
+            Pengeluaran Terbesar
           </Typography>
 
+          {/* ================= SUBTITLE ================= */}
           <Typography variant="body2" color="text.secondary">
-            Pengeluaran terbesar kamu datang dari:
+            Kategori yang paling sering kamu gunakan
           </Typography>
 
+          {/* ================= HIGHLIGHT ================= */}
           <Chip
-            label={`🔥 ${top.label} (${top.value}%)`}
+            label={`${top.label} • ${top.value}%`}
             sx={{
               bgcolor: top.color + "22",
               color: top.color,
@@ -36,6 +39,7 @@ export default function CategoryPieChart() {
             }}
           />
 
+          {/* ================= CHART ================= */}
           <PieChart
             series={[
               {
@@ -52,8 +56,9 @@ export default function CategoryPieChart() {
             height={260}
           />
 
+          {/* ================= INSIGHT ================= */}
           <Typography variant="caption" color="text.secondary">
-            🎯 Fokus kurangi kategori ini untuk naik level lebih cepat.
+            Kalau mau lebih hemat, kamu bisa mulai dari kategori ini 🙂
           </Typography>
         </Stack>
       </CardContent>

@@ -15,7 +15,6 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Stack,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -38,7 +37,7 @@ export default function CategoriesPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [activeRow, setActiveRow] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [editItem, setEditItem] = useState(null);
+  const [editItem, setEditItem] = useState<any>(null);
 
   const { data: categories = [], isLoading } = useGetCategoriesQuery();
   const [deleteCategory] = useDeleteCategoryMutation();
@@ -61,41 +60,40 @@ export default function CategoriesPage() {
 
   return (
     <PageWrapper
-      title="🎭 Skill Manager"
-      // subtitle="Atur skill keuangan kamu biar resource nggak bocor"
+      title="Kategori"
       actions={{
-        label: "Tambah Skill",
+        label: "Tambah Kategori",
         onClick: () => setOpenAdd(true),
         icon: <AddRoundedIcon />,
       }}
     >
-      {/* NPC MESSAGE */}
+      {/* INFO */}
       <Paper
         sx={{
-          p: 2,
+          p: 2.5,
           mb: 3,
           borderRadius: 3,
-          bgcolor: "#F4F6FF",
+          bgcolor: "background.default",
         }}
       >
-        <Typography fontWeight={600}>
-          🧠 DompetBot berkata:
+        <Typography fontWeight={700}>
+          Kelola Kategori Transaksi
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          “Skill yang rapi bikin laporan & analisis kamu makin akurat 🎯”
+          Kategori membantu mengelompokkan pemasukan dan pengeluaran agar laporan
+          keuangan lebih akurat dan mudah dipahami.
         </Typography>
       </Paper>
 
       {/* SEARCH */}
       <Paper
         sx={{
-          boxShadow: "0 12px 32px rgba(0,0,0,0.05)",
           borderRadius: 3,
           mb: 2,
         }}
       >
         <TextField
-          placeholder="Cari skill… (contoh: Makan, Hiburan)"
+          placeholder="Cari kategori… (contoh: Makan, Transport)"
           size="small"
           fullWidth
           value={search}
@@ -115,34 +113,28 @@ export default function CategoriesPage() {
           <Box textAlign="center" py={6}>
             <CircularProgress />
             <Typography variant="body2" color="text.secondary" mt={2}>
-              Sedang memuat skill kamu…
+              Sedang memuat kategori…
             </Typography>
           </Box>
         ) : filtered.length === 0 ? (
           <Box textAlign="center" py={6}>
-            <Typography fontWeight={600}>
-              Belum ada skill di sini 👀
+            <Typography fontWeight={700}>
+              Belum ada kategori
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Tambahkan skill pertama biar sistem bisa belajar kebiasaanmu
+              Tambahkan kategori untuk mulai mengelompokkan transaksi kamu.
             </Typography>
             <Button
               variant="contained"
               sx={{ mt: 2 }}
               onClick={() => setOpenAdd(true)}
             >
-              Tambah Skill Pertama 🎮
+              Tambah Kategori
             </Button>
           </Box>
         ) : (
           <MainTable
-            header={[
-              "Skill",
-              "Preview",
-              "Role",
-              "Icon",
-              "Aksi",
-            ]}
+            header={["Kategori", "Preview", "Jenis", "Ikon", "Aksi"]}
             hasPagination
             rowsCount={filtered.length}
             page={0}
@@ -160,9 +152,11 @@ export default function CategoriesPage() {
                 >
                   {/* NAME */}
                   <TableCell>
-                    <Typography fontWeight={600}>{row.name}</Typography>
+                    <Typography fontWeight={600}>
+                      {row.name}
+                    </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Skill aktif
+                      Digunakan pada transaksi
                     </Typography>
                   </TableCell>
 
@@ -184,8 +178,8 @@ export default function CategoriesPage() {
                     <Chip
                       label={
                         row.type === "INCOME"
-                          ? "⬆️ Buff"
-                          : "⬇️ Damage"
+                          ? "Pemasukan"
+                          : "Pengeluaran"
                       }
                       size="small"
                       sx={{
@@ -218,7 +212,10 @@ export default function CategoriesPage() {
                   <TableCell align="right">
                     <IconButton
                       size="small"
-                      sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
+                      sx={{
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
                       onClick={(e) => handleMenu(e, row)}
                     >
                       <MoreVertIcon fontSize="small" />
@@ -243,13 +240,13 @@ export default function CategoriesPage() {
             setAnchorEl(null);
           }}
         >
-          Upgrade Skill ✨
+          Edit Kategori
         </MenuItem>
         <MenuItem
           sx={{ color: "error.main" }}
           onClick={handleDelete}
         >
-          Hapus Skill 😬
+          Hapus Kategori
         </MenuItem>
       </Menu>
 

@@ -19,34 +19,31 @@ import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
 
 import PageWrapper from "@/components/layouts/pageWrapper";
 
-// ======================= MOCK PLAYER DATA =======================
-const player = {
-  name: "Player One",
+/* ================= MOCK USER DATA ================= */
+const user = {
+  name: "Ilham",
   joinDate: "Juni 2025",
   level: 5,
   xp: 420,
   nextLevelXp: 500,
   streak: 7,
   achievements: 8,
-  questsCompleted: 24,
-  survivalRate: "Good",
+  records: 24,
+  financialHealth: "Baik",
 };
 
-export default function PlayerProfilePage() {
-  const progress = (player.xp / player.nextLevelXp) * 100;
+export default function ProfilePage() {
+  const progress = (user.xp / user.nextLevelXp) * 100;
 
   return (
-    <PageWrapper
-      title="🧍 Player Profile"
-    //   subtitle="Ini karakter keuangan kamu"
-    >
-      {/* ================= HEADER ================= */}
+    <PageWrapper title="Profil">
+      {/* ================= PROFILE HEADER ================= */}
       <Card
         sx={{
           p: 4,
           mb: 4,
           borderRadius: 4,
-          bgcolor: "#F4F6FF",
+          bgcolor: "background.default",
         }}
       >
         <Stack
@@ -58,22 +55,22 @@ export default function PlayerProfilePage() {
             sx={{
               width: 96,
               height: 96,
-              fontSize: 40,
-              bgcolor: "#6366F1",
+              fontSize: 36,
+              bgcolor: "primary.main",
             }}
           >
-            🎮
+            {user.name.charAt(0)}
           </Avatar>
 
           <Box flex={1}>
             <Typography variant="h5" fontWeight={800}>
-              {player.name}
+              {user.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Bergabung sejak {player.joinDate}
+              Bergabung sejak {user.joinDate}
             </Typography>
 
-            {/* LEVEL */}
+            {/* PROGRESS */}
             <Box mt={2}>
               <Stack
                 direction="row"
@@ -81,12 +78,13 @@ export default function PlayerProfilePage() {
                 mb={0.5}
               >
                 <Typography fontWeight={700}>
-                  Level {player.level}
+                  Progress Konsistensi
                 </Typography>
                 <Typography variant="caption">
-                  {player.xp}/{player.nextLevelXp} XP
+                  {user.xp}/{user.nextLevelXp}
                 </Typography>
               </Stack>
+
               <LinearProgress
                 variant="determinate"
                 value={progress}
@@ -95,87 +93,96 @@ export default function PlayerProfilePage() {
                   borderRadius: 5,
                 }}
               />
+
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                mt={0.5}
+                display="block"
+              >
+                Terus jaga kebiasaan baik untuk meningkatkan progres ini
+              </Typography>
             </Box>
           </Box>
         </Stack>
       </Card>
 
-      {/* ================= STATS ================= */}
+      {/* ================= SUMMARY STATS ================= */}
       <Grid container spacing={3} mb={4}>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3, borderRadius: 3 }}>
+          <Card sx={{ p: 3 }}>
             <Stack spacing={1}>
               <LocalFireDepartmentRoundedIcon color="error" />
               <Typography fontWeight={700}>
-                {player.streak} Hari
+                {user.streak} hari
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Streak Aktif
+                Konsistensi Aktif
               </Typography>
             </Stack>
           </Card>
         </Grid>
 
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3, borderRadius: 3 }}>
+          <Card sx={{ p: 3 }}>
             <Stack spacing={1}>
               <EmojiEventsRoundedIcon color="warning" />
               <Typography fontWeight={700}>
-                {player.achievements}
+                {user.achievements}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Achievements
+                Pencapaian
               </Typography>
             </Stack>
           </Card>
         </Grid>
 
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3, borderRadius: 3 }}>
+          <Card sx={{ p: 3 }}>
             <Stack spacing={1}>
               <TrendingUpRoundedIcon color="success" />
               <Typography fontWeight={700}>
-                {player.questsCompleted}
+                {user.records}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Quest Selesai
+                Catatan Keuangan
               </Typography>
             </Stack>
           </Card>
         </Grid>
 
         <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3, borderRadius: 3 }}>
+          <Card sx={{ p: 3 }}>
             <Stack spacing={1}>
               <ShieldRoundedIcon color="primary" />
               <Typography fontWeight={700}>
-                {player.survivalRate}
+                {user.financialHealth}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Survival Rating
+                Kondisi Finansial
               </Typography>
             </Stack>
           </Card>
         </Grid>
       </Grid>
 
-      {/* ================= TRAITS ================= */}
-      <Card sx={{ p: 3, borderRadius: 3 }}>
+      {/* ================= PERSONAL INSIGHT ================= */}
+      <Card sx={{ p: 3 }}>
         <Typography fontWeight={700} mb={2}>
-          🧬 Player Traits
+          Karakter Finansial
         </Typography>
 
         <Stack direction="row" spacing={1} flexWrap="wrap">
           <Chip label="Disiplin" color="success" />
-          <Chip label="Hemat" color="primary" />
-          <Chip label="Masih Khilaf 😅" />
+          <Chip label="Terencana" color="primary" />
+          <Chip label="Perlu Konsistensi" />
         </Stack>
 
         <Divider sx={{ my: 2 }} />
 
         <Typography variant="body2" color="text.secondary">
-          Traits ini dibentuk dari kebiasaan transaksi dan quest kamu.
-          Makin konsisten, makin kuat karaktermu 💪
+          Karakter ini terbentuk dari kebiasaan mencatat transaksi dan menjaga konsistensi.
+          Perubahan kecil yang dilakukan rutin akan berdampak besar dalam jangka panjang.
         </Typography>
       </Card>
     </PageWrapper>

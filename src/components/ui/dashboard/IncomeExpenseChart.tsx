@@ -25,32 +25,46 @@ export default function IncomeExpenseChart() {
   const incomeRatio = (income / total) * 100;
   const expenseRatio = (expense / total) * 100;
 
+  const isHealthy = income >= expense;
+
   return (
     <Card sx={{ p: 3, borderRadius: 4 }}>
       <CardContent sx={{ p: 0 }}>
         <Stack spacing={2}>
+          {/* ================= TITLE ================= */}
           <Typography fontWeight={800}>
-            ⚔️ Buff vs Damage
+            Ringkasan Pemasukan & Pengeluaran
           </Typography>
 
-          {/* QUICK STATS */}
-          <Stack direction="row" spacing={2}>
+          {/* ================= QUICK STATS ================= */}
+          <Stack direction="row" spacing={1} flexWrap="wrap">
             <Chip
               icon={<TrendingUpRoundedIcon />}
-              label={`Income: Rp ${income.toLocaleString("id-ID")}`}
+              label={`Pemasukan: Rp ${income.toLocaleString(
+                "id-ID"
+              )}`}
               color="success"
+              variant="outlined"
             />
             <Chip
               icon={<TrendingDownRoundedIcon />}
-              label={`Expense: Rp ${expense.toLocaleString("id-ID")}`}
+              label={`Pengeluaran: Rp ${expense.toLocaleString(
+                "id-ID"
+              )}`}
               color="error"
+              variant="outlined"
             />
           </Stack>
 
-          {/* PROGRESS */}
+          {/* ================= RATIO PROGRESS ================= */}
           <Box>
-            <Typography variant="caption" color="text.secondary">
-              Income vs Expense Ratio
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              mb={0.5}
+              display="block"
+            >
+              Perbandingan pemasukan dan pengeluaran
             </Typography>
 
             <LinearProgress
@@ -66,17 +80,21 @@ export default function IncomeExpenseChart() {
               }}
             />
 
-            <Stack direction="row" justifyContent="space-between">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              mt={0.5}
+            >
               <Typography variant="caption">
-                💚 {Math.round(incomeRatio)}%
+                Pemasukan {Math.round(incomeRatio)}%
               </Typography>
               <Typography variant="caption">
-                💥 {Math.round(expenseRatio)}%
+                Pengeluaran {Math.round(expenseRatio)}%
               </Typography>
             </Stack>
           </Box>
 
-          {/* CHART */}
+          {/* ================= CHART ================= */}
           <LineChart
             height={240}
             xAxis={[
@@ -87,12 +105,12 @@ export default function IncomeExpenseChart() {
             ]}
             series={[
               {
-                label: "Income",
+                label: "Pemasukan",
                 data: [income],
                 color: "#4CAF50",
               },
               {
-                label: "Expense",
+                label: "Pengeluaran",
                 data: [expense],
                 color: "#F44336",
               },
@@ -100,11 +118,14 @@ export default function IncomeExpenseChart() {
             loading={isLoading}
           />
 
-          {/* INSIGHT */}
-          <Typography variant="body2" color="text.secondary">
-            {income > expense
-              ? "🟢 Kondisi aman. Resource kamu masih lebih kuat dari damage."
-              : "🔴 Warning! Expense mulai mengalahkan income."}
+          {/* ================= INSIGHT ================= */}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
+            {isHealthy
+              ? "Kondisi keuangan kamu masih cukup aman. Pemasukan lebih besar dari pengeluaran 👍"
+              : "Pengeluaran mulai lebih besar dari pemasukan. Mungkin bisa dicek lagi pengeluaran bulan ini 👀"}
           </Typography>
         </Stack>
       </CardContent>

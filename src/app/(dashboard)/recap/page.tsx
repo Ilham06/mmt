@@ -9,7 +9,6 @@ import {
   Stack,
   Chip,
   Divider,
-  Button,
   List,
   ListItem,
   ListItemText,
@@ -21,24 +20,28 @@ import SentimentVeryDissatisfiedRoundedIcon from "@mui/icons-material/SentimentV
 
 import PageWrapper from "@/components/layouts/pageWrapper";
 
+/* ================= MOOD META ================= */
 const moodMeta: any = {
   GOOD: {
-    label: "Great Day!",
+    label: "Kondisi Baik",
     color: "success",
     icon: <SentimentSatisfiedRoundedIcon />,
-    text: "Keuangan kamu aman hari ini. Nice control 👏",
+    text:
+      "Pengelolaan keuangan kamu hari ini berjalan dengan baik. Tetap pertahankan kebiasaan ini.",
   },
   OK: {
-    label: "Not Bad",
+    label: "Cukup Terkendali",
     color: "warning",
     icon: <SentimentNeutralRoundedIcon />,
-    text: "Masih oke, tapi ada ruang buat lebih hemat.",
+    text:
+      "Masih dalam batas wajar, namun ada ruang untuk pengelolaan yang lebih optimal.",
   },
   BAD: {
-    label: "Rough Day",
+    label: "Perlu Evaluasi",
     color: "error",
     icon: <SentimentVeryDissatisfiedRoundedIcon />,
-    text: "Hari yang berat. Besok bisa lebih baik 💪",
+    text:
+      "Pengeluaran hari ini cukup tinggi. Luangkan waktu untuk mengevaluasi kembali.",
   },
 };
 
@@ -56,11 +59,21 @@ export default function DailyRecapPage() {
   const mood = moodMeta[data.mood];
 
   return (
-    <PageWrapper title="📅 Daily Recap">
-      {/* HERO */}
-      <Card sx={{ p: 4, mb: 4, borderRadius: 4, textAlign: "center", bgcolor: "#F4F6FF" }}>
-        <Stack spacing={1} alignItems="center">
-          <Typography variant="h5" fontWeight={800}>
+    <PageWrapper title="Ringkasan Harian">
+      {/* ================= HEADER SUMMARY ================= */}
+      <Card
+        sx={{
+          p: 4,
+          mb: 4,
+          borderRadius: 4,
+          bgcolor: "background.default",
+        }}
+      >
+        <Stack spacing={2}>
+          <Typography
+            fontWeight={800}
+            fontSize={22}
+          >
             {new Date(data.date).toLocaleDateString("id-ID", {
               weekday: "long",
               day: "numeric",
@@ -69,27 +82,43 @@ export default function DailyRecapPage() {
             })}
           </Typography>
 
-          <Chip
-            icon={mood.icon}
-            label={mood.label}
-            color={mood.color}
-            sx={{ fontWeight: 700 }}
-          />
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+          >
+            <Chip
+              icon={mood.icon}
+              label={mood.label}
+              color={mood.color}
+              sx={{ fontWeight: 700 }}
+            />
 
-          <Typography variant="body2" color="text.secondary" maxWidth={360}>
-            {mood.text}
-          </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
+              {mood.text}
+            </Typography>
+          </Stack>
         </Stack>
       </Card>
 
-      {/* SUMMARY */}
+      {/* ================= FINANCIAL SUMMARY ================= */}
       <Grid container spacing={3} mb={4}>
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="caption" color="text.secondary">
-              💚 Heal (Income)
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
+              Total Pemasukan
             </Typography>
-            <Typography variant="h6" fontWeight={700}>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              mt={0.5}
+            >
               Rp {data.income.toLocaleString("id-ID")}
             </Typography>
           </Card>
@@ -97,52 +126,77 @@ export default function DailyRecapPage() {
 
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="caption" color="text.secondary">
-              💥 Damage (Expense)
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
+              Total Pengeluaran
             </Typography>
-            <Typography variant="h6" fontWeight={700} color="error.main">
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              mt={0.5}
+              color="error.main"
+            >
               Rp {data.expense.toLocaleString("id-ID")}
             </Typography>
           </Card>
         </Grid>
       </Grid>
 
-      {/* INSIGHT */}
+      {/* ================= INSIGHT ================= */}
       {data.topCategory && (
         <Card sx={{ p: 3, borderRadius: 3, mb: 4 }}>
-          <Typography fontWeight={700}>📊 Insight Hari Ini</Typography>
+          <Typography fontWeight={700} mb={0.5}>
+            Insight Hari Ini
+          </Typography>
           <Typography variant="body2" color="text.secondary">
-            Kategori paling sering kamu serang hari ini adalah{" "}
+            Pengeluaran paling dominan hari ini berasal dari kategori{" "}
             <b>
               {data.topCategory.icon} {data.topCategory.name}
             </b>
+            .
           </Typography>
         </Card>
       )}
 
-      {/* TRANSACTIONS LIST */}
-      <Card sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+      {/* ================= TRANSACTIONS ================= */}
+      <Card sx={{ p: 3, borderRadius: 3 }}>
         <Typography fontWeight={700} mb={2}>
-          📜 Aktivitas Hari Ini
+          Aktivitas Hari Ini
         </Typography>
 
         {data.transactions.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            Belum ada transaksi hari ini.
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
+            Tidak ada transaksi yang tercatat hari ini.
           </Typography>
         ) : (
           <List disablePadding>
             {data.transactions.map((trx: any) => (
-              <ListItem key={trx.id} divider>
+              <ListItem
+                key={trx.id}
+                divider
+                sx={{ px: 0 }}
+              >
                 <ListItemText
                   primary={
                     <Typography fontWeight={600}>
                       {trx.title}
                     </Typography>
                   }
-                  secondary={`${trx.category?.name ?? "-"} • ${
-                    trx.type === "EXPENSE" ? "-" : "+"
-                  } Rp ${trx.amount.toLocaleString("id-ID")}`}
+                  secondary={
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      {trx.category?.name ?? "-"} •{" "}
+                      {trx.type === "EXPENSE" ? "Pengeluaran" : "Pemasukan"} • Rp{" "}
+                      {trx.amount.toLocaleString("id-ID")}
+                    </Typography>
+                  }
                 />
               </ListItem>
             ))}

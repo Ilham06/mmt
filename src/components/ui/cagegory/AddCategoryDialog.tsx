@@ -91,185 +91,141 @@ export default function AddCategoryDialog({
 
   return (
     <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      fullScreen={isMobile} // ✅ MOBILE ONLY
-      TransitionComponent={Fade}
-      PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : 3,
-        },
-      }}
-    >
-      {/* ================= HEADER ================= */}
-      <DialogTitle sx={{ pb: 1, px: isMobile ? 2 : 3 }}>
-        {isEdit ? "✨ Upgrade Skill" : "🎭 Unlock Skill Baru"}
-      </DialogTitle>
+  open={open}
+  onClose={onClose}
+  maxWidth="xs"
+  fullWidth
+  fullScreen={isMobile}
+  TransitionComponent={Fade}
+  PaperProps={{
+    sx: {
+      borderRadius: isMobile ? 0 : 4,
+    },
+  }}
+>
+  {/* HEADER */}
+  <Box sx={{ px: 3, py: 2.5, borderBottom: "1px solid", borderColor: "divider" }}>
+    <Typography fontWeight={800}>
+      {isEdit ? "Edit Kategori" : "Tambah Kategori"}
+    </Typography>
+    <Typography variant="body2" color="text.secondary">
+      Tentukan kategori untuk mengelompokkan transaksi
+    </Typography>
+  </Box>
 
-      <Typography
-        px={isMobile ? 2 : 3}
-        pb={2}
-        color="text.secondary"
-        fontSize={isMobile ? 13 : 14}
+  {/* CONTENT */}
+  <DialogContent sx={{ px: 3, py: 3 }}>
+    <Stack spacing={3}>
+      <TextField
+        label="Nama Kategori"
+        fullWidth
+        value={form.name}
+        placeholder="Contoh: Makan, Transport, Hiburan"
+        onChange={(e) => handleChange("name", e.target.value)}
+      />
+
+      <TextField
+        select
+        label="Jenis Kategori"
+        fullWidth
+        value={form.type}
+        helperText="Menentukan pengaruh kategori pada laporan"
+        onChange={(e) => handleChange("type", e.target.value)}
       >
-        {isEdit
-          ? "Tingkatkan skill ini biar tracking kamu makin akurat."
-          : "Skill ini akan menentukan ke mana resource kamu sering dipakai."}
-      </Typography>
+        <MenuItem value="EXPENSE">Pengeluaran</MenuItem>
+        <MenuItem value="INCOME">Pemasukan</MenuItem>
+      </TextField>
 
-      <Divider />
-
-      {/* ================= CONTENT ================= */}
-      <DialogContent sx={{ py: isMobile ? 2 : 3, px: isMobile ? 2 : 4 }}>
-        <Stack spacing={isMobile ? 2.5 : 3}>
-          {/* NPC MESSAGE */}
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              bgcolor: "#F4F6FF",
-            }}
-          >
-            <Typography fontWeight={600}>🧠 DompetBot:</Typography>
-            <Typography variant="body2" color="text.secondary">
-              “Pilih skill dengan bijak, ini bakal sering muncul di laporan kamu 😉”
-            </Typography>
-          </Box>
-
-          {/* SKILL NAME */}
-          <TextField
-            label="Nama Skill"
-            fullWidth
-            value={form.name}
-            placeholder="Contoh: Survival, Fun, Mobility"
-            helperText="Bikin yang gampang kamu pahami"
-            onChange={(e) => handleChange("name", e.target.value)}
-          />
-
-          {/* ROLE / TYPE */}
-          <TextField
-            select
-            label="Peran Skill"
-            fullWidth
-            value={form.type}
-            helperText="Skill ini buff atau damage?"
-            onChange={(e) => handleChange("type", e.target.value)}
-          >
-            <MenuItem value="EXPENSE">⬇️ Damage (Expense)</MenuItem>
-            <MenuItem value="INCOME">⬆️ Buff (Income)</MenuItem>
-          </TextField>
-
-          {/* ICON PICKER */}
-          <Box>
-            <Typography mb={1} fontWeight={600}>
-              🎨 Pilih Ikon Skill
-            </Typography>
-
-            <Grid container spacing={isMobile ? 1 : 1.5}>
-              {iconSet.map((item) => (
-                <Grid key={item.label} size={{ xs: 3, sm: 2 }}>
-                  <IconButton
-                    onClick={() => handleChange("icon", item.label)}
-                    sx={{
-                      width: isMobile ? 44 : 48,
-                      height: isMobile ? 44 : 48,
-                      borderRadius: 2,
-                      border:
-                        form.icon === item.label
-                          ? `2px solid ${form.color || "#4f8ef7"}`
-                          : "1px solid #ccc",
-                      bgcolor:
-                        form.icon === item.label
-                          ? (form.color || "#4f8ef7") + "22"
-                          : "transparent",
-                    }}
-                  >
-                    {item.icon}
-                  </IconButton>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          {/* COLOR PICKER */}
-          <Box>
-            <Typography mb={1} fontWeight={600}>
-              🎯 Warna Skill
-            </Typography>
-
-            <Grid container spacing={isMobile ? 1 : 1.5}>
-              {colorSet.map((clr) => (
-                <Grid key={clr} size={{ xs: 3, sm: 2 }}>
-                  <Box
-                    onClick={() => handleChange("color", clr)}
-                    sx={{
-                      width: isMobile ? 28 : 32,
-                      height: isMobile ? 28 : 32,
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                      bgcolor: clr,
-                      border:
-                        form.color === clr
-                          ? "3px solid #000"
-                          : "2px solid white",
-                    }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          {/* PREVIEW */}
-          {form.name && form.icon && form.color && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" mb={1}>
-                🔍 Preview Skill
-              </Typography>
-              <Chip
-                label={form.name}
+      {/* ICON */}
+      <Box>
+        <Typography fontWeight={700} mb={1}>
+          Ikon
+        </Typography>
+        <Grid container spacing={1.5}>
+          {iconSet.map((item) => (
+            <Grid key={item.label} size={{ xs: 3 }}>
+              <IconButton
+                onClick={() => handleChange("icon", item.label)}
                 sx={{
-                  bgcolor: form.color + "33",
-                  color: form.color,
-                  fontWeight: 600,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 2,
+                  border:
+                    form.icon === item.label
+                      ? `2px solid ${form.color || "#2065D1"}`
+                      : "1px solid #ddd",
+                  bgcolor:
+                    form.icon === item.label
+                      ? (form.color || "#2065D1") + "22"
+                      : "transparent",
+                }}
+              >
+                {item.icon}
+              </IconButton>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+
+      {/* COLOR */}
+      <Box>
+        <Typography fontWeight={700} mb={1}>
+          Warna
+        </Typography>
+        <Grid container spacing={1.5}>
+          {colorSet.map((clr) => (
+            <Grid key={clr} size={{ xs: 3 }}>
+              <Box
+                onClick={() => handleChange("color", clr)}
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  bgcolor: clr,
+                  cursor: "pointer",
+                  border:
+                    form.color === clr
+                      ? "3px solid #000"
+                      : "2px solid #fff",
                 }}
               />
-            </Box>
-          )}
-        </Stack>
-      </DialogContent>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
 
-      {/* ================= ACTION ================= */}
-      <DialogActions
-        sx={{
-          p: isMobile ? 2 : 3,
-          flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? 1 : 0,
-        }}
-      >
-        <Button
-          fullWidth={isMobile}
-          sx={{ textTransform: "none" }}
-          onClick={onClose}
-        >
-          Batal
-        </Button>
+      {/* PREVIEW */}
+      {form.name && form.icon && form.color && (
+        <Box>
+          <Typography variant="caption" color="text.secondary">
+            Preview
+          </Typography>
+          <Chip
+            label={form.name}
+            sx={{
+              mt: 0.5,
+              bgcolor: form.color + "22",
+              color: form.color,
+              fontWeight: 600,
+            }}
+          />
+        </Box>
+      )}
+    </Stack>
+  </DialogContent>
 
-        <Button
-          fullWidth={isMobile}
-          variant="contained"
-          sx={{ borderRadius: 2, px: isMobile ? 0 : 4 }}
-          disabled={!form.name || !form.icon || !form.color}
-          onClick={handleSubmit}
-        >
-          {creating || updating
-            ? "Memproses…"
-            : isEdit
-            ? "Upgrade Skill 🚀"
-            : "Unlock Skill 🎮"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+  {/* ACTION */}
+  <DialogActions sx={{ px: 3, py: 2 }}>
+    <Button onClick={onClose}>Batal</Button>
+    <Button
+      variant="contained"
+      disabled={!form.name || !form.icon || !form.color}
+      onClick={handleSubmit}
+    >
+      {isEdit ? "Simpan Perubahan" : "Simpan Kategori"}
+    </Button>
+  </DialogActions>
+</Dialog>
+
   );
 }

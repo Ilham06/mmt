@@ -36,23 +36,32 @@ export const sidebarWidth = 240;
 
 // ================= MENU =================
 const menu = [
-  { label: 'Game Hub', href: '/dashboard', icon: <DashboardIcon /> },
-  { label: 'Activity Log', href: '/transaction', icon: <BarChartIcon /> },
-  { label: 'Daily Quests', href: '/quest', icon: <FlagIcon />, badge: 'NEW' },
-  { label: 'Survival Mode', href: '/budgets', icon: <FavoriteIcon /> },
+  { label: "Dashboard", href: "/dashboard", icon: <DashboardIcon /> },
+
+  { label: "Transaksi", href: "/transaction", icon: <BarChartIcon /> },
+
+  // { label: "Target Harian", href: "/quest", icon: <FlagIcon />, badge: "NEW" },
+
+  { label: "Anggaran", href: "/budgets", icon: <FavoriteIcon /> },
+
   {
-    label: 'Inventory',
+    label: "Aset",
     icon: <WalletIcon />,
     children: [
-      { label: 'Wallets', href: '/wallets', icon: <WalletIcon /> },
-      { label: 'Skills', href: '/categories', icon: <CategoryIcon /> },
+      { label: "Dompet", href: "/wallets", icon: <WalletIcon /> },
+      { label: "Kategori", href: "/categories", icon: <CategoryIcon /> },
     ],
   },
-  { label: 'Achievements', href: '/archivement', icon: <EmojiEventsIcon /> },
-  { label: 'Daily Recap', href: '/recap', icon: <CalendarTodayIcon /> },
-  { label: 'Player Profile', href: '/profile', icon: <PersonIcon /> },
-  { label: 'Settings', href: '/setting', icon: <SettingsIcon /> },
+
+  // { label: "Pencapaian", href: "/archivement", icon: <EmojiEventsIcon /> },
+
+  { label: "Ringkasan Harian", href: "/recap", icon: <CalendarTodayIcon /> },
+
+  { label: "Profil", href: "/profile", icon: <PersonIcon /> },
+
+  { label: "Pengaturan", href: "/setting", icon: <SettingsIcon /> },
 ];
+
 
 export function Sidebar({
   open,
@@ -182,7 +191,7 @@ export function Sidebar({
               selected={active ? true : false}
               onClick={() => {
                 isMobile ? onClose() : null
-              } }
+              }}
               sx={{
                 borderRadius: 2,
                 px: 2,
@@ -203,9 +212,9 @@ export function Sidebar({
                   fontWeight: active ? 700 : 500,
                 }}
               />
-              {item.badge && (
+              {/* {item.badge && (
                 <Chip size="small" label={item.badge} color="error" />
-              )}
+              )} */}
             </ListItemButton>
           );
         })}
