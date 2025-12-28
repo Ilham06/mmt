@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Button,
   TextField,
   Grid,
@@ -15,6 +14,8 @@ import {
   Divider,
   Fade,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 import WalletIcon from "@mui/icons-material/Wallet";
@@ -28,7 +29,7 @@ import {
   useUpdateWalletMutation,
 } from "@/redux/slices/walletApi";
 
-// ======================= STORAGE TYPES =======================
+/* ================= STORAGE TYPES ================= */
 const typeOptions = [
   {
     value: "CASH",
@@ -61,6 +62,9 @@ const typeOptions = [
 ];
 
 export default function AddWalletDialog({ open, onClose, editData }: any) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [form, setForm] = useState({
     name: "",
     type: "",
@@ -73,7 +77,7 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
 
   const isEdit = Boolean(editData);
 
-  // ======================= PREFILL =======================
+  /* PREFILL */
   useEffect(() => {
     if (editData) {
       setForm({
@@ -87,9 +91,8 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
     }
   }, [editData]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: any) =>
     setForm((prev) => ({ ...prev, [field]: value }));
-  };
 
   const selectedType = typeOptions.find((t) => t.value === form.type);
 
@@ -108,14 +111,18 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
       onClose={onClose}
       maxWidth="sm"
       fullWidth
+      fullScreen={isMobile} // ✅ mobile only
       TransitionComponent={Fade}
       PaperProps={{
-        sx: { borderRadius: 4, overflow: "hidden" },
+        sx: {
+          borderRadius: isMobile ? 0 : 4,
+          overflow: "hidden",
+        },
       }}
     >
-      {/* ================= HEADER ================= */}
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
+      {/* ===== HEADER (DESKTOP TETAP) ===== */}
+      <Box sx={{ p: isMobile ? 2 : 3 }}>
+        <Typography variant={isMobile ? "h6" : "h5"} fontWeight={700}>
           {isEdit ? "✨ Upgrade Storage" : "💰 Bangun Storage Baru"}
         </Typography>
         <Typography color="text.secondary">
@@ -125,46 +132,30 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
 
       <Divider />
 
-      {/* ================= CONTENT ================= */}
-      <DialogContent sx={{ py: 4, px: 4 }}>
+      {/* ===== CONTENT ===== */}
+      <DialogContent sx={{ py: isMobile ? 2 : 4, px: isMobile ? 2 : 4 }}>
         <Stack spacing={3}>
-          {/* NPC MESSAGE */}
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              bgcolor: "#F4F6FF",
-            }}
-          >
-            <Typography fontWeight={600}>🧠 DompetBot:</Typography>
-            <Typography variant="body2" color="text.secondary">
-              “Pisahin storage bikin resource kamu lebih gampang dikontrol 🎯”
-            </Typography>
-          </Box>
-
           {/* STORAGE NAME */}
           <TextField
             label="Nama Storage"
             fullWidth
             required
-            placeholder="Contoh: Dompet Utama, Gaji, Jajan"
-            helperText="Bikin nama yang gampang kamu kenali"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
           />
 
-          {/* STORAGE TYPE */}
+          {/* STORAGE TYPE (STRUKTUR SAMA, RESPONSIVE GRID) */}
           <Box>
             <Typography mb={1} fontWeight={600}>
               Pilih Tipe Storage
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Setiap storage punya karakter berbeda
-            </Typography>
 
             <Grid container spacing={2}>
               {typeOptions.map((t) => (
-                <Grid size={{ xs: 6 }} key={t.value}>
+                <Grid
+                  key={t.value}
+                  size={{ xs: 12, sm: 6 }} // ✅ mobile 1 kolom, desktop 2 kolom
+                >
                   <Box
                     onClick={() => handleChange("type", t.value)}
                     sx={{
@@ -175,7 +166,6 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
                         form.type === t.value
                           ? `2px solid ${t.color}`
                           : "1px solid #eee",
-                      transition: "0.2s",
                       display: "flex",
                       alignItems: "center",
                       gap: 2,
@@ -208,7 +198,6 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
             label="Resource Awal (Rp)"
             type="number"
             fullWidth
-            helperText="Jumlah resource saat storage ini dibuat"
             value={form.balance}
             onChange={(e) => handleChange("balance", e.target.value)}
           />
@@ -218,52 +207,49 @@ export default function AddWalletDialog({ open, onClose, editData }: any) {
             label="Catatan Tambahan (Opsional)"
             fullWidth
             multiline
-            minRows={3}
-            placeholder="Contoh: khusus gaji, jangan dipakai jajan"
+            minRows={isMobile ? 3 : 4}
             value={form.notes}
             onChange={(e) => handleChange("notes", e.target.value)}
           />
 
           {/* PREVIEW */}
           {selectedType && form.name && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" mb={1}>
-                🔍 Preview Storage
-              </Typography>
-              <Chip
-                label={`${selectedType.label} • ${form.name}`}
-                sx={{
-                  bgcolor: selectedType.color + "22",
-                  color: selectedType.color,
-                  fontWeight: 600,
-                }}
-              />
-            </Box>
+            <Chip
+              label={`${selectedType.label} • ${form.name}`}
+              sx={{
+                bgcolor: selectedType.color + "22",
+                color: selectedType.color,
+                fontWeight: 600,
+              }}
+            />
           )}
         </Stack>
       </DialogContent>
 
       <Divider />
 
-      {/* ================= ACTION ================= */}
-      <DialogActions sx={{ p: 3 }}>
+      {/* ===== ACTION ===== */}
+      <DialogActions
+        sx={{
+          p: isMobile ? 2 : 3,
+          flexDirection: isMobile ? "column" : "row", // ✅ mobile only
+          gap: isMobile ? 1 : 0,
+        }}
+      >
         <Button
+          fullWidth={isMobile}
           onClick={onClose}
-          sx={{ textTransform: "none", fontWeight: 600 }}
+          sx={{ fontWeight: 600 }}
         >
           Batal
         </Button>
 
         <Button
+          fullWidth={isMobile}
           variant="contained"
-          sx={{
-            textTransform: "none",
-            fontWeight: 700,
-            px: 4,
-            borderRadius: 2,
-          }}
           onClick={handleSubmit}
           disabled={!form.name || !form.type}
+          sx={{ fontWeight: 700 }}
         >
           {isEdit ? "Upgrade Storage 🚀" : "Bangun Storage 🎮"}
         </Button>

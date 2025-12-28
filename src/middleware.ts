@@ -6,6 +6,11 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const path = req.nextUrl.pathname;
 
+  // ✅ ROOT REDIRECT
+  if (path === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   const protectedPaths = ["/dashboard", "/wallets", "/transactions", "/categories"];
   const isProtected = protectedPaths.some((p) => path.startsWith(p));
 
@@ -24,7 +29,7 @@ export function middleware(req: NextRequest) {
     try {
       verifyToken(token);
       return NextResponse.redirect(new URL("/dashboard", req.url));
-    } catch {}
+    } catch { }
   }
 
   return NextResponse.next();
@@ -37,6 +42,7 @@ export const config = {
     "/transactions/:path*",
     "/categories/:path*",
     "/login",
+    "/"
   ],
   runtime: "nodejs",
 };

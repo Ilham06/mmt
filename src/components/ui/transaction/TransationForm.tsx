@@ -16,6 +16,8 @@ import {
   DialogContent,
   DialogActions,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 import PaidIcon from "@mui/icons-material/Paid";
@@ -39,53 +41,26 @@ import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import PageWrapper from "@/components/layouts/pageWrapper";
 
-// ======================= OPTIONS =======================
+/* ======================= OPTIONS ======================= */
 const typeOptions = [
-  {
-    value: "INCOME",
-    label: "Masuk",
-    icon: <TrendingUpRounded />,
-    color: "success",
-  },
-  {
-    value: "EXPENSE",
-    label: "Keluar",
-    icon: <TrendingDownRounded />,
-    color: "error",
-  },
-  {
-    value: "TRANSFER",
-    label: "Transfer",
-    icon: <SwapHorizRounded />,
-    color: "primary",
-  },
+  { value: "INCOME", label: "Masuk", icon: <TrendingUpRounded />, color: "success" },
+  { value: "EXPENSE", label: "Keluar", icon: <TrendingDownRounded />, color: "error" },
+  { value: "TRANSFER", label: "Transfer", icon: <SwapHorizRounded />, color: "primary" },
 ];
 
-// ======================= SMART REACTION =======================
-const getSmartReaction = ({
-  amount,
-  type,
-}: {
-  amount: number;
-  type: string;
-}) => {
+/* ======================= SMART REACTION ======================= */
+const getSmartReaction = ({ amount, type }: { amount: number; type: string }) => {
   if (!amount) return null;
-
   if (type === "EXPENSE") {
     if (amount >= 1_000_000) return "😬 Wah, gede juga pengeluarannya…";
     if (amount >= 300_000) return "🤔 Lumayan nih, masih aman?";
     return "👌 Oke, masih wajar";
   }
-
   if (type === "INCOME") {
     if (amount >= 5_000_000) return "🎉 Gajian besar nih, mantap!";
     return "💰 Income masuk!";
   }
-
-  if (type === "TRANSFER") {
-    return "🔁 Pindah dompet, aman~";
-  }
-
+  if (type === "TRANSFER") return "🔁 Pindah dompet, aman~";
   return null;
 };
 
@@ -95,13 +70,15 @@ export default function TransactionFormPage() {
   const id = params?.id;
   const isEdit = Boolean(id);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [createTransaction] = useCreateTransactionMutation();
   const [updateTransaction] = useUpdateTransactionMutation();
   const [deleteTransaction] = useDeleteTransactionMutation();
 
   const { data: detail } = useGetTransactionByIdQuery(id!, {
     skip: !isEdit,
-    refetchOnMountOrArgChange: true,
   });
 
   const { data: categories = [] } = useGetCategoriesQuery();
@@ -121,7 +98,7 @@ export default function TransactionFormPage() {
     notes: "",
   });
 
-  // ======================= PREFILL =======================
+  /* ================= PREFILL ================= */
   useEffect(() => {
     if (detail && isEdit) {
       setForm({
@@ -137,20 +114,17 @@ export default function TransactionFormPage() {
     }
   }, [detail, isEdit]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: any) =>
     setForm((prev) => ({ ...prev, [field]: value }));
-  };
 
-  // ======================= SMART REACTION VALUE =======================
   const smartReaction = getSmartReaction({
     amount: Number(form.amount),
     type: form.type,
   });
 
-  // ======================= SUBMIT =======================
+  /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     setError("");
-
     if (!form.title || !form.amount || !form.date) {
       return setError("Judul, jumlah, dan tanggal wajib diisi ya 😅");
     }
@@ -168,18 +142,16 @@ export default function TransactionFormPage() {
     };
 
     try {
-      if (isEdit) {
-        await updateTransaction({ id, ...payload }).unwrap();
-      } else {
-        await createTransaction(payload).unwrap();
-      }
+      isEdit
+        ? await updateTransaction({ id, ...payload }).unwrap()
+        : await createTransaction(payload).unwrap();
       router.push("/transactions");
     } catch (err: any) {
       setError(err.data?.error || "Gagal menyimpan transaksi 😭");
     }
   };
 
-  // ======================= RESET =======================
+  /* ================= RESET ================= */
   const handleReset = () => {
     if (!isEdit) {
       setForm({
@@ -206,7 +178,7 @@ export default function TransactionFormPage() {
     }
   };
 
-  // ======================= DELETE =======================
+  /* ================= DELETE ================= */
   const handleDelete = async () => {
     try {
       await deleteTransaction(id!).unwrap();
@@ -228,15 +200,9 @@ export default function TransactionFormPage() {
         </Alert>
       )}
 
-      <Paper
-        sx={{
-          p: 4,
-          borderRadius: 4,
-          boxShadow: "0 12px 32px rgba(0,0,0,0.05)",
-        }}
-      >
-        <Stack spacing={4}>
-          {/* BASIC */}
+      <Paper sx={{ p: isMobile ? 2 : 4, borderRadius: 4 }}>
+        <Stack spacing={isMobile ? 3 : 4}>
+          {/* INFO UTAMA */}
           <Box>
             <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
               <PaidIcon fontSize="small" /> Info Utama
@@ -256,24 +222,14 @@ export default function TransactionFormPage() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Jumlah (Rp)"
+                  type="number"
                   fullWidth
                   required
-                  type="number"
                   value={form.amount}
                   onChange={(e) => handleChange("amount", e.target.value)}
                 />
-
-                {/* SMART REACTION */}
                 {smartReaction && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      mt: 0.5,
-                      display: "block",
-                      color: "text.secondary",
-                      fontStyle: "italic",
-                    }}
-                  >
+                  <Typography variant="caption" color="text.secondary">
                     {smartReaction}
                   </Typography>
                 )}
@@ -283,10 +239,15 @@ export default function TransactionFormPage() {
 
           <Divider />
 
-          {/* TYPE */}
+          {/* JENIS TRANSAKSI */}
           <Box>
             <Typography fontWeight={700}>Jenis Transaksi</Typography>
-            <Stack direction="row" spacing={2} mt={2}>
+
+            <Stack
+              direction={isMobile ? "column" : "row"}
+              spacing={2}
+              mt={2}
+            >
               {typeOptions.map((t) => (
                 <Chip
                   key={t.value}
@@ -296,7 +257,13 @@ export default function TransactionFormPage() {
                   color={t.color as any}
                   variant={form.type === t.value ? "filled" : "outlined"}
                   onClick={() => handleChange("type", t.value)}
-                  sx={{ px: 2, py: 2, fontWeight: 600 }}
+                  sx={{
+                    px: 2,
+                    py: 2,
+                    fontWeight: 600,
+                    width: isMobile ? "100%" : "auto",
+                    justifyContent: isMobile ? "flex-start" : "center",
+                  }}
                 />
               ))}
             </Stack>
@@ -366,7 +333,7 @@ export default function TransactionFormPage() {
 
           <Divider />
 
-          {/* NOTES */}
+          {/* CATATAN */}
           <Box>
             <Typography variant="h6" fontWeight={700} display="flex" gap={1}>
               <NotesIcon fontSize="small" /> Catatan (opsional)
@@ -375,43 +342,87 @@ export default function TransactionFormPage() {
             <TextField
               fullWidth
               multiline
-              minRows={3}
+              minRows={isMobile ? 3 : 4}
               value={form.notes}
               onChange={(e) => handleChange("notes", e.target.value)}
+              placeholder="Catatan tambahan kalau ada…"
             />
           </Box>
 
-          {/* ACTION */}
-          <Box display="flex" justifyContent="space-between">
-            <Button variant="text" onClick={() => router.push("/transactions")}>
-              ← Kembali
-            </Button>
+          <Divider />
 
-            <Stack direction="row" spacing={2}>
-              <Button variant="outlined" onClick={handleReset}>
-                Reset
+          {/* ACTION */}
+          {isMobile ? (
+            <Stack spacing={2}>
+              <Button
+                fullWidth
+                size="large"
+                variant="contained"
+                onClick={handleSubmit}
+              >
+                {isEdit ? "Update Transaksi" : "Simpan Transaksi"}
               </Button>
 
-              {isEdit && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => setDeleteOpen(true)}
-                >
-                  Hapus
+              <Stack direction="row" spacing={1}>
+                <Button fullWidth variant="outlined" onClick={handleReset}>
+                  Reset
                 </Button>
-              )}
 
-              <Button variant="contained" onClick={handleSubmit}>
-                {isEdit ? "Update" : "Simpan"}
+                {isEdit && (
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color="error"
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    Hapus
+                  </Button>
+                )}
+              </Stack>
+
+              <Button
+                fullWidth
+                variant="text"
+                onClick={() => router.push("/transactions")}
+              >
+                ← Kembali ke daftar
               </Button>
             </Stack>
-          </Box>
+          ) : (
+            <Box display="flex" justifyContent="space-between">
+              <Button
+                variant="text"
+                onClick={() => router.push("/transactions")}
+              >
+                ← Kembali
+              </Button>
+
+              <Stack direction="row" spacing={2}>
+                <Button variant="outlined" onClick={handleReset}>
+                  Reset
+                </Button>
+
+                {isEdit && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    Hapus
+                  </Button>
+                )}
+
+                <Button variant="contained" onClick={handleSubmit}>
+                  {isEdit ? "Update" : "Simpan"}
+                </Button>
+              </Stack>
+            </Box>
+          )}
         </Stack>
       </Paper>
 
-      {/* DELETE */}
-      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
+      {/* DELETE DIALOG */}
+      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} fullWidth>
         <DialogTitle>Yakin mau hapus?</DialogTitle>
         <DialogContent>
           <Typography>

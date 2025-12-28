@@ -18,12 +18,14 @@ import {
   Select,
   Grid,
   Card,
+  Stack,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FlashOnRoundedIcon from "@mui/icons-material/FlashOnRounded";
-import { Add } from "@mui/icons-material";
 
 import { useState } from "react";
 import PageWrapper from "@/components/layouts/pageWrapper";
@@ -39,11 +41,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
-import { useXPGainQueue } from "@/hooks/useXpGainToast";
 import XPGainToast from "@/components/game/XpGainToast";
 
 export default function TransactionsPage() {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [tab, setTab] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -95,8 +98,6 @@ export default function TransactionsPage() {
     router.push(`/transaction/${activeRow}`);
   };
 
-  // const xpToast = useXPGainQueue();
-  // xpToast.showXP(100);
   const typeMeta: any = {
     INCOME: { label: "⬆️ Buff", bg: "#E8F5E9", color: "#2E7D32" },
     EXPENSE: { label: "⬇️ Damage", bg: "#FFEBEE", color: "#C62828" },
@@ -106,14 +107,13 @@ export default function TransactionsPage() {
   return (
     <PageWrapper
       title="🧾 Action Log"
-      // subtitle="Semua aksi keuangan kamu tercatat di sini"
       actions={{
         label: "Aksi Baru",
         href: "/transaction/create",
         icon: <FlashOnRoundedIcon />,
       }}
     >
-      <XPGainToast xp={200} visible={true} />
+      <XPGainToast xp={200} visible />
 
       {/* ===== SUMMARY ===== */}
       <Grid container spacing={2} mb={3}>
@@ -123,21 +123,14 @@ export default function TransactionsPage() {
       </Grid>
 
       {/* NPC MESSAGE */}
-      <Card
-        sx={{
-          p: 2,
-          mb: 3,
-          borderRadius: 3,
-          bgcolor: "#F4F6FF",
-        }}
-      >
+      <Card sx={{ p: 2, mb: 3, borderRadius: 3, bgcolor: "#F4F6FF" }}>
         <Typography fontWeight={600}>🧠 DompetBot:</Typography>
         <Typography variant="body2" color="text.secondary">
           “Setiap aksi kecil ngaruh ke progres finansial kamu 🎮”
         </Typography>
       </Card>
 
-      {/* ===== FILTER + LIST ===== */}
+      {/* ===== FILTER + TABLE ===== */}
       <Box
         sx={{
           borderRadius: 4,
@@ -147,14 +140,18 @@ export default function TransactionsPage() {
       >
         {/* FILTER */}
         <Box p={3}>
+          {/* TABS */}
           <Tabs
             value={tab}
             onChange={(_, v) => setTab(v)}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile ? "auto" : false}
             sx={{
               mb: 3,
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontWeight: 700,
+                minWidth: isMobile ? "auto" : undefined,
               },
             }}
           >
@@ -164,8 +161,12 @@ export default function TransactionsPage() {
             <Tab label="🔁 Move" value="TRANSFER" />
           </Tabs>
 
-          <Box display="flex" gap={2} flexWrap="wrap">
-            <FormControl size="small" sx={{ width: 180 }}>
+          {/* FILTER ROW */}
+          <Stack
+            direction={isMobile ? "column" : "row"}
+            spacing={2}
+          >
+            <FormControl size="small" sx={{ width: isMobile ? "100%" : 180 }}>
               <Select
                 displayEmpty
                 value={categoryFilter}
@@ -180,7 +181,7 @@ export default function TransactionsPage() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ width: 180 }}>
+            <FormControl size="small" sx={{ width: isMobile ? "100%" : 180 }}>
               <Select
                 displayEmpty
                 value={walletFilter}
@@ -198,8 +199,8 @@ export default function TransactionsPage() {
             <TextField
               size="small"
               placeholder="Cari aksi…"
-              sx={{ flex: 1 }}
               value={search}
+              fullWidth={isMobile}
               onChange={(e) => setSearch(e.target.value)}
               InputProps={{
                 startAdornment: (
@@ -209,10 +210,10 @@ export default function TransactionsPage() {
                 ),
               }}
             />
-          </Box>
+          </Stack>
         </Box>
 
-        {/* TABLE */}
+        {/* ===== TABLE (TIDAK DIUBAH) ===== */}
         <MainTable
           header={["Aksi", "Tipe", "Impact", "Tanggal", ""]}
           hasPagination
@@ -235,14 +236,7 @@ export default function TransactionsPage() {
               data.map((row: any) => {
                 const meta = typeMeta[row.type];
                 return (
-                  <TableRow
-                    key={row.id}
-                    hover
-                    sx={{
-                      height: 72,
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
+                  <TableRow key={row.id} hover sx={{ height: 72 }}>
                     <TableCell>
                       <Typography fontWeight={700}>{row.title}</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -266,7 +260,9 @@ export default function TransactionsPage() {
                       <Typography
                         fontWeight={700}
                         color={
-                          row.type === "EXPENSE" ? "error.main" : "success.main"
+                          row.type === "EXPENSE"
+                            ? "error.main"
+                            : "success.main"
                         }
                       >
                         {row.type === "EXPENSE" ? "-" : "+"} Rp{" "}
@@ -282,7 +278,6 @@ export default function TransactionsPage() {
                       <IconButton
                         size="small"
                         onClick={(e) => handleMenuOpen(e, row.id)}
-                        sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
                       >
                         <MoreVertIcon fontSize="small" />
                       </IconButton>

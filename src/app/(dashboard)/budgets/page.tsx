@@ -73,7 +73,11 @@ export default function BudgetSurvivalPage() {
   };
 
   return (
-    <PageWrapper title="❤️ Survival Mode">
+    <PageWrapper title="❤️ Survival Mode" actions={{ 
+      label: 'Tambah Budget',
+      icon: <AddRoundedIcon/>,
+      onClick: () => setOpen(true)
+     }}>
       {/* NPC MESSAGE */}
       <Card sx={{ p: 2, mb: 3, borderRadius: 3, bgcolor: "#F4F6FF" }}>
         <Typography fontWeight={600}>🧠 DompetBot:</Typography>
@@ -81,17 +85,6 @@ export default function BudgetSurvivalPage() {
           “Pelan-pelan aja. Yang penting HP kamu nggak habis 🔥”
         </Typography>
       </Card>
-
-      {/* ADD BUTTON */}
-      <Box mb={3} display="flex" justifyContent="flex-end">
-        <Button
-          variant="contained"
-          startIcon={<AddRoundedIcon />}
-          onClick={() => setOpen(true)}
-        >
-          Tambah Budget
-        </Button>
-      </Box>
 
       {/* BUDGET LIST */}
       <Grid container spacing={3}>

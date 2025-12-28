@@ -17,6 +17,8 @@ import {
   Typography,
   Divider,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 import { iconSet, colorSet } from "@/config/categories";
@@ -35,6 +37,9 @@ export default function AddCategoryDialog({
   onClose: () => void;
   category?: any;
 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [form, setForm] = useState({
     name: "",
     type: "EXPENSE",
@@ -90,14 +95,25 @@ export default function AddCategoryDialog({
       onClose={onClose}
       maxWidth="xs"
       fullWidth
+      fullScreen={isMobile} // ✅ MOBILE ONLY
       TransitionComponent={Fade}
+      PaperProps={{
+        sx: {
+          borderRadius: isMobile ? 0 : 3,
+        },
+      }}
     >
       {/* ================= HEADER ================= */}
-      <DialogTitle sx={{ pb: 1 }}>
+      <DialogTitle sx={{ pb: 1, px: isMobile ? 2 : 3 }}>
         {isEdit ? "✨ Upgrade Skill" : "🎭 Unlock Skill Baru"}
       </DialogTitle>
 
-      <Typography px={3} pb={2} color="text.secondary">
+      <Typography
+        px={isMobile ? 2 : 3}
+        pb={2}
+        color="text.secondary"
+        fontSize={isMobile ? 13 : 14}
+      >
         {isEdit
           ? "Tingkatkan skill ini biar tracking kamu makin akurat."
           : "Skill ini akan menentukan ke mana resource kamu sering dipakai."}
@@ -106,8 +122,8 @@ export default function AddCategoryDialog({
       <Divider />
 
       {/* ================= CONTENT ================= */}
-      <DialogContent sx={{ py: 3, px: 4 }}>
-        <Stack spacing={3}>
+      <DialogContent sx={{ py: isMobile ? 2 : 3, px: isMobile ? 2 : 4 }}>
+        <Stack spacing={isMobile ? 2.5 : 3}>
           {/* NPC MESSAGE */}
           <Box
             sx={{
@@ -116,9 +132,7 @@ export default function AddCategoryDialog({
               bgcolor: "#F4F6FF",
             }}
           >
-            <Typography fontWeight={600}>
-              🧠 DompetBot:
-            </Typography>
+            <Typography fontWeight={600}>🧠 DompetBot:</Typography>
             <Typography variant="body2" color="text.secondary">
               “Pilih skill dengan bijak, ini bakal sering muncul di laporan kamu 😉”
             </Typography>
@@ -152,18 +166,15 @@ export default function AddCategoryDialog({
             <Typography mb={1} fontWeight={600}>
               🎨 Pilih Ikon Skill
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={1}>
-              Ikon bantu kamu ngenalin skill ini lebih cepat
-            </Typography>
 
-            <Grid container spacing={1.5}>
+            <Grid container spacing={isMobile ? 1 : 1.5}>
               {iconSet.map((item) => (
-                <Grid key={item.label} size={{ xs: 2 }}>
+                <Grid key={item.label} size={{ xs: 3, sm: 2 }}>
                   <IconButton
                     onClick={() => handleChange("icon", item.label)}
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: isMobile ? 44 : 48,
+                      height: isMobile ? 44 : 48,
                       borderRadius: 2,
                       border:
                         form.icon === item.label
@@ -187,18 +198,15 @@ export default function AddCategoryDialog({
             <Typography mb={1} fontWeight={600}>
               🎯 Warna Skill
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={1}>
-              Warna ini bakal dipakai di chart & laporan
-            </Typography>
 
-            <Grid container spacing={1.5}>
+            <Grid container spacing={isMobile ? 1 : 1.5}>
               {colorSet.map((clr) => (
-                <Grid key={clr} size={{ xs: 2 }}>
+                <Grid key={clr} size={{ xs: 3, sm: 2 }}>
                   <Box
                     onClick={() => handleChange("color", clr)}
                     sx={{
-                      width: 32,
-                      height: 32,
+                      width: isMobile ? 28 : 32,
+                      height: isMobile ? 28 : 32,
                       borderRadius: "50%",
                       cursor: "pointer",
                       bgcolor: clr,
@@ -233,14 +241,25 @@ export default function AddCategoryDialog({
       </DialogContent>
 
       {/* ================= ACTION ================= */}
-      <DialogActions sx={{ p: 3 }}>
-        <Button sx={{ textTransform: "none" }} onClick={onClose}>
+      <DialogActions
+        sx={{
+          p: isMobile ? 2 : 3,
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 1 : 0,
+        }}
+      >
+        <Button
+          fullWidth={isMobile}
+          sx={{ textTransform: "none" }}
+          onClick={onClose}
+        >
           Batal
         </Button>
 
         <Button
+          fullWidth={isMobile}
           variant="contained"
-          sx={{ borderRadius: 2, px: 4 }}
+          sx={{ borderRadius: 2, px: isMobile ? 0 : 4 }}
           disabled={!form.name || !form.icon || !form.color}
           onClick={handleSubmit}
         >

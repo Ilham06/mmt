@@ -10,6 +10,9 @@ import {
   Typography,
   Collapse,
   Chip,
+  Drawer,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -31,74 +34,40 @@ import { useState, Fragment, useEffect } from 'react';
 
 export const sidebarWidth = 240;
 
-// ========================= GAME MODE MENU =========================
+// ================= MENU =================
 const menu = [
-  {
-    label: 'Game Hub',
-    href: '/dashboard',
-    icon: <DashboardIcon />,
-  },
-  {
-    label: 'Activity Log',
-    href: '/transaction',
-    icon: <BarChartIcon />,
-  },
-  {
-    label: 'Daily Quests',
-    href: '/quest',
-    icon: <FlagIcon />,
-    badge: 'NEW',
-  },
-  {
-    label: 'Survival Mode',
-    href: '/budgets',
-    icon: <FavoriteIcon />,
-  },
-
+  { label: 'Game Hub', href: '/dashboard', icon: <DashboardIcon /> },
+  { label: 'Activity Log', href: '/transaction', icon: <BarChartIcon /> },
+  { label: 'Daily Quests', href: '/quest', icon: <FlagIcon />, badge: 'NEW' },
+  { label: 'Survival Mode', href: '/budgets', icon: <FavoriteIcon /> },
   {
     label: 'Inventory',
     icon: <WalletIcon />,
     children: [
-      {
-        label: 'Wallets',
-        href: '/wallets',
-        icon: <WalletIcon />,
-      },
-      {
-        label: 'Skills',
-        href: '/categories',
-        icon: <CategoryIcon />,
-      },
+      { label: 'Wallets', href: '/wallets', icon: <WalletIcon /> },
+      { label: 'Skills', href: '/categories', icon: <CategoryIcon /> },
     ],
   },
-
-  {
-    label: 'Achievements',
-    href: '/archivement',
-    icon: <EmojiEventsIcon />,
-  },
-  {
-    label: 'Daily Recap',
-    href: '/recap',
-    icon: <CalendarTodayIcon />,
-  },
-  {
-    label: 'Player Profile',
-    href: '/profile',
-    icon: <PersonIcon />,
-  },
-  {
-    label: 'Settings',
-    href: '/setting',
-    icon: <SettingsIcon />,
-  },
+  { label: 'Achievements', href: '/archivement', icon: <EmojiEventsIcon /> },
+  { label: 'Daily Recap', href: '/recap', icon: <CalendarTodayIcon /> },
+  { label: 'Player Profile', href: '/profile', icon: <PersonIcon /> },
+  { label: 'Settings', href: '/setting', icon: <SettingsIcon /> },
 ];
 
-export function Sidebar() {
+export function Sidebar({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const pathname = usePathname();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [openMenu, setOpenMenu] = useState<Record<string, boolean>>({});
 
-  // Auto open submenu if child active
+  // auto open submenu if active
   useEffect(() => {
     menu.forEach((item) => {
       if (item.children) {
@@ -112,28 +81,22 @@ export function Sidebar() {
     });
   }, [pathname]);
 
-  const toggleMenu = (label: string) => {
+  const toggleMenu = (label: string) =>
     setOpenMenu((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
 
   const isActive = (href: string) => pathname.startsWith(href);
 
-  return (
+  const content = (
     <Box
       sx={{
         width: sidebarWidth,
-        flexShrink: 0,
-        borderRight: '1px solid rgba(145,158,171,0.12)',
+        height: '100%',
         bgcolor: 'background.paper',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        display: 'flex',
-        flexDirection: 'column',
+        borderRight: '1px solid',
+        borderColor: 'divider',
       }}
     >
-      {/* ================= BRAND ================= */}
+      {/* BRAND */}
       <Toolbar sx={{ px: 2, py: 2 }}>
         <Box>
           <Typography variant="h6" fontWeight={900}>
@@ -145,28 +108,21 @@ export function Sidebar() {
         </Box>
       </Toolbar>
 
-      {/* ================= MENU ================= */}
-      <List sx={{ px: 1, mt: 1 }}>
+      {/* MENU */}
+      <List sx={{ px: 1 }}>
         {menu.map((item) => {
-          // ---------- SUBMENU ----------
           if (item.children) {
-            const open = openMenu[item.label] || false;
+            const openSub = openMenu[item.label];
 
             return (
               <Fragment key={item.label}>
                 <ListItemButton
                   onClick={() => toggleMenu(item.label)}
-                  sx={{
-                    mb: 0.5,
-                    borderRadius: 2,
-                    px: 2,
-                    py: 1.2,
-                  }}
+                  sx={{ borderRadius: 2, px: 2, py: 1.2 }}
                 >
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     {item.icon}
                   </ListItemIcon>
-
                   <ListItemText
                     primary={item.label}
                     primaryTypographyProps={{
@@ -174,55 +130,48 @@ export function Sidebar() {
                       fontWeight: 700,
                     }}
                   />
-
-                  {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  {openSub ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </ListItemButton>
 
-                <Collapse in={open} timeout="auto" unmountOnExit>
-                  <List disablePadding>
-                    {item.children.map((child) => {
-                      const activeChild = isActive(child.href);
+                <Collapse in={openSub} unmountOnExit>
+                  {item.children.map((child) => {
+                    const active = isActive(child.href);
 
-                      return (
-                        <ListItemButton
-                          key={child.href}
-                          component={Link}
-                          href={child.href}
-                          selected={activeChild}
-                          sx={{
-                            pl: 5,
-                            pr: 2,
-                            py: 1,
-                            borderRadius: 2,
-                            mb: 0.3,
-                            ...(activeChild && {
-                              bgcolor: 'primary.lighter',
-                              color: 'primary.main',
-                              fontWeight: 700,
-                            }),
+                    return (
+                      <ListItemButton
+                        key={child.href}
+                        component={Link}
+                        href={child.href}
+                        selected={active}
+                        onClick={onClose}
+                        sx={{
+                          pl: 5,
+                          py: 1,
+                          borderRadius: 2,
+                          ...(active && {
+                            bgcolor: 'primary.lighter',
+                            color: 'primary.main',
+                          }),
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          {child.icon}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={child.label}
+                          primaryTypographyProps={{
+                            fontSize: 13,
+                            fontWeight: active ? 700 : 500,
                           }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 32 }}>
-                            {child.icon}
-                          </ListItemIcon>
-
-                          <ListItemText
-                            primary={child.label}
-                            primaryTypographyProps={{
-                              fontSize: 13,
-                              fontWeight: activeChild ? 700 : 500,
-                            }}
-                          />
-                        </ListItemButton>
-                      );
-                    })}
-                  </List>
+                        />
+                      </ListItemButton>
+                    );
+                  })}
                 </Collapse>
               </Fragment>
             );
           }
 
-          // ---------- MAIN ITEM ----------
           const active = item.href && isActive(item.href);
 
           return (
@@ -231,27 +180,22 @@ export function Sidebar() {
               component={Link}
               href={item.href}
               selected={active ? true : false}
+              onClick={() => {
+                isMobile ? onClose() : null
+              } }
               sx={{
-                mb: 0.5,
                 borderRadius: 2,
                 px: 2,
                 py: 1.2,
                 ...(active && {
                   bgcolor: 'primary.lighter',
                   color: 'primary.main',
-                  fontWeight: 700,
                 }),
               }}
             >
-              <ListItemIcon
-                sx={{
-                  minWidth: 36,
-                  color: active ? 'primary.main' : 'text.secondary',
-                }}
-              >
+              <ListItemIcon sx={{ minWidth: 36 }}>
                 {item.icon}
               </ListItemIcon>
-
               <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{
@@ -259,19 +203,39 @@ export function Sidebar() {
                   fontWeight: active ? 700 : 500,
                 }}
               />
-
               {item.badge && (
-                <Chip
-                  label={item.badge}
-                  size="small"
-                  color="error"
-                  sx={{ height: 18, fontSize: 10, fontWeight: 700 }}
-                />
+                <Chip size="small" label={item.badge} color="error" />
               )}
             </ListItemButton>
           );
         })}
       </List>
+    </Box>
+  );
+
+  // ================= MOBILE =================
+  if (isMobile) {
+    return (
+      <Drawer open={open} onClose={onClose} ModalProps={{ keepMounted: true }}>
+        {content}
+      </Drawer>
+    );
+  }
+
+  // ================= DESKTOP =================
+  if (!open) return null;
+
+  return (
+    <Box
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        zIndex: theme.zIndex.drawer,
+      }}
+    >
+      {content}
     </Box>
   );
 }

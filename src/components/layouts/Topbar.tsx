@@ -3,33 +3,35 @@
 import {
   AppBar,
   Avatar,
+  Badge,
   Box,
+  Chip,
+  Divider,
   IconButton,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
+  Stack,
   Toolbar,
   Typography,
-  Badge,
-  ListItemIcon,
-  Divider,
-  ListItemText,
-  Chip,
-  Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
+import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
-import MenuIcon from "@mui/icons-material/Menu";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
 import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { sidebarWidth } from "./Sidebar";
-import { useRouter } from "next/navigation";
 
 export function Topbar({
   sidebarOpen,
@@ -39,6 +41,8 @@ export function Topbar({
   onToggleSidebar: () => void;
 }) {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [anchorNotif, setAnchorNotif] = useState<null | HTMLElement>(null);
   const [anchorProfile, setAnchorProfile] = useState<null | HTMLElement>(null);
@@ -46,7 +50,7 @@ export function Topbar({
   const openNotif = Boolean(anchorNotif);
   const openProfile = Boolean(anchorProfile);
 
-  // ================= MOCK PLAYER STATE (NANTI GANTI STORE) =================
+  // ================= MOCK PLAYER =================
   const player = {
     name: "Dompet Survivor",
     level: 3,
@@ -54,7 +58,7 @@ export function Topbar({
     initials: "DS",
   };
 
-  // ================= MOCK EVENTS / NOTIFICATIONS =================
+  // ================= MOCK NOTIFICATIONS =================
   const notifications = [
     {
       id: 1,
@@ -75,7 +79,6 @@ export function Topbar({
       method: "POST",
       credentials: "include",
     });
-
     router.push("/login");
   };
 
@@ -86,59 +89,72 @@ export function Topbar({
         position="fixed"
         elevation={0}
         sx={{
-          ml: sidebarOpen ? `${sidebarWidth}px` : 0,
-          width: sidebarOpen ? `calc(100% - ${sidebarWidth}px)` : "100%",
+          ml: !isMobile && sidebarOpen ? `${sidebarWidth}px` : 0,
+          width:
+            !isMobile && sidebarOpen
+              ? `calc(100% - ${sidebarWidth}px)`
+              : "100%",
           bgcolor: "background.paper",
           color: "text.primary",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           transition: "all .2s ease",
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
           {/* ================= LEFT ================= */}
-          {/* LEFT */}
           <Stack direction="row" spacing={1.5} alignItems="center">
             <IconButton onClick={onToggleSidebar}>
               <MenuIcon />
             </IconButton>
 
-            <Stack spacing={0.5}>
-              <Typography
-                variant="subtitle1"
-                fontWeight={800}
-                sx={{ color: "primary.main", letterSpacing: 0.4 }}
-              >
-                🎮 Money Tracker
+            {!isMobile ? (
+              <Stack spacing={0}>
+                <Typography
+                  fontWeight={800}
+                  sx={{ color: "primary.main", letterSpacing: 0.4 }}
+                >
+                  🎮 Money Tracker
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Player Hub
+                </Typography>
+              </Stack>
+            ) : (
+              <Typography fontWeight={800} color="primary.main">
+                Money
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Player Hub
-              </Typography>
-            </Stack>
+            )}
           </Stack>
 
           {/* ================= RIGHT ================= */}
           <Stack direction="row" spacing={1.5} alignItems="center">
-            {/* PLAYER MINI STATS */}
-            <Stack direction="row" spacing={1}>
-              <Chip
-                size="small"
-                icon={<EmojiEventsRoundedIcon />}
-                label={`Lv ${player.level}`}
-                color="primary"
-                sx={{ fontWeight: 700 }}
-              />
-              <Chip
-                size="small"
-                icon={<LocalFireDepartmentRoundedIcon />}
-                label={`${player.streak}🔥`}
-                color="warning"
-                sx={{ fontWeight: 700 }}
-              />
-            </Stack>
+            {/* PLAYER STATS (DESKTOP ONLY) */}
+            {!isMobile && (
+              <Stack direction="row" spacing={1}>
+                <Chip
+                  size="small"
+                  icon={<EmojiEventsRoundedIcon />}
+                  label={`Lv ${player.level}`}
+                  color="primary"
+                  sx={{ fontWeight: 700 }}
+                />
+                <Chip
+                  size="small"
+                  icon={<LocalFireDepartmentRoundedIcon />}
+                  label={`${player.streak}🔥`}
+                  color="warning"
+                  sx={{ fontWeight: 700 }}
+                />
+              </Stack>
+            )}
 
-            {/* SEARCH */}
-            <IconButton>
-              <SearchIcon />
-            </IconButton>
+            {/* SEARCH (DESKTOP ONLY) */}
+            {!isMobile && (
+              <IconButton>
+                <SearchIcon />
+              </IconButton>
+            )}
 
             {/* NOTIFICATION */}
             <IconButton onClick={(e) => setAnchorNotif(e.currentTarget)}>
@@ -151,8 +167,8 @@ export function Topbar({
             <IconButton onClick={(e) => setAnchorProfile(e.currentTarget)}>
               <Avatar
                 sx={{
-                  width: 34,
-                  height: 34,
+                  width: 32,
+                  height: 32,
                   bgcolor: "primary.main",
                   fontWeight: 700,
                 }}
@@ -172,7 +188,7 @@ export function Topbar({
         PaperProps={{
           sx: {
             mt: 1,
-            width: 320,
+            width: isMobile ? "90vw" : 320,
             borderRadius: 3,
             p: 1,
           },

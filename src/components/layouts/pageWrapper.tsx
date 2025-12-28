@@ -1,10 +1,19 @@
 'use client';
 
-import { Box, Breadcrumbs, Button, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Breadcrumbs,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AddIcon from '@mui/icons-material/Add';
 import MotionButton from '../motions/MotionButton';
+import React from 'react';
 
 interface ActionButton {
   label: string;
@@ -20,73 +29,88 @@ export default function PageWrapper({
   children,
 }: {
   title: string;
-  actions?: ActionButton[] | ActionButton; // single or multiple
+  actions?: ActionButton[] | ActionButton;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
 
-  // Normalize actions → always array
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const actionButtons = Array.isArray(actions)
     ? actions
     : actions
     ? [actions]
     : [];
 
+  /* ================= ACTION RENDERER ================= */
+  const renderActions = (fullWidth = false) => (
+    <Stack direction="row" spacing={1} width={fullWidth ? '100%' : 'auto'}>
+      {actionButtons.map((btn, idx) => {
+        const ButtonEl = (
+          <MotionButton
+            key={idx}
+            variant={btn.variant || 'contained'}
+            startIcon={btn.icon || <AddIcon />}
+            fullWidth={fullWidth}
+            sx={{
+              textTransform: 'none',
+              borderRadius: 2,
+              px: fullWidth ? 2 : 2,
+            }}
+            onClick={btn.onClick}
+          >
+            {btn.label}
+          </MotionButton>
+        );
+
+        return btn.href ? (
+          <Link
+            key={idx}
+            href={btn.href}
+            style={{ textDecoration: 'none', width: fullWidth ? '100%' : 'auto' }}
+          >
+            {ButtonEl}
+          </Link>
+        ) : (
+          ButtonEl
+        );
+      })}
+    </Stack>
+  );
+
   return (
     <Box>
-
-      {/* =============================== */}
-      {/* TITLE + ACTIONS */}
-      {/* =============================== */}
+      {/* ================= TITLE (DESKTOP + MOBILE) ================= */}
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
         mb={1.5}
       >
-        {/* TITLE */}
-        <Typography variant="h4" fontWeight={700}>
+        <Typography
+          variant={isMobile ? 'h5' : 'h4'}
+          fontWeight={700}
+          sx={{ wordBreak: 'break-word' }}
+        >
           {title}
         </Typography>
 
-        {/* ACTION BUTTON(S) */}
-        {actionButtons.length > 0 && (
-          <Stack direction="row" spacing={1}>
-            {actionButtons.map((btn, idx) => {
-              const Btn = (
-                <MotionButton
-                  key={idx}
-                  variant={btn.variant || 'contained'}
-                  startIcon={btn.icon || <AddIcon />}
-                  sx={{ textTransform: 'none', borderRadius: 2 }}
-                  onClick={btn.onClick}
-                >
-                  {btn.label}
-                </MotionButton>
-              );
-
-              return btn.href ? (
-                <Link key={idx} href={btn.href} style={{ textDecoration: 'none' }}>
-                  {Btn}
-                </Link>
-              ) : (
-                Btn
-              );
-            })}
-          </Stack>
-        )}
+        {/* ACTIONS — DESKTOP ONLY */}
+        {!isMobile && actionButtons.length > 0 && renderActions()}
       </Stack>
 
-      {/* =============================== */}
-      {/* BREADCRUMB */}
-      {/* =============================== */}
+      {/* ================= BREADCRUMB ================= */}
       <Breadcrumbs
         separator="›"
         sx={{
-          mb: 3,
-          fontSize: 14,
+          mb: 1.5,
+          fontSize: isMobile ? 12 : 14,
           color: 'text.secondary',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}
       >
         <Link
@@ -96,11 +120,14 @@ export default function PageWrapper({
           Dashboard
         </Link>
 
-        {segments.map((seg, index) => {
+        {(isMobile ? segments.slice(-1) : segments).map((seg, index, arr) => {
           const label = seg.charAt(0).toUpperCase() + seg.slice(1);
-          const href = '/' + segments.slice(0, index + 1).join('/');
+          const realIndex = isMobile ? segments.length - 1 : index;
 
-          const isLast = index === segments.length - 1;
+          const href = '/' + segments.slice(0, realIndex + 1).join('/');
+          const isLast =
+            (isMobile && index === arr.length - 1) ||
+            (!isMobile && realIndex === segments.length - 1);
 
           return (
             <Link
@@ -118,9 +145,12 @@ export default function PageWrapper({
         })}
       </Breadcrumbs>
 
-      {/* =============================== */}
-      {/* PAGE CONTENT */}
-      {/* =============================== */}
+      {/* ================= ACTIONS — MOBILE ONLY (UNDER BREADCRUMB) ================= */}
+      {isMobile && actionButtons.length > 0 && (
+        <Box mb={2}>{renderActions(true)}</Box>
+      )}
+
+      {/* ================= CONTENT ================= */}
       <Box>{children}</Box>
     </Box>
   );

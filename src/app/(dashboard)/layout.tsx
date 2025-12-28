@@ -1,24 +1,34 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import {
+  ThemeProvider,
+  CssBaseline,
+  Box,
+  useMediaQuery,
+} from '@mui/material';
+
 import { theme } from '@/config/theme';
 import { Sidebar, sidebarWidth } from '@/components/layouts/Sidebar';
 import { Topbar } from '@/components/layouts/Topbar';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      {/* SIDEBAR – hanya render kalau open */}
-      {sidebarOpen && <Sidebar />}
+      {/* SIDEBAR */}
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* TOPBAR */}
       <Topbar
-        sidebarOpen={sidebarOpen}
+        sidebarOpen={!isMobile && sidebarOpen}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
       />
 
@@ -26,9 +36,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <Box
         component="main"
         sx={{
-          ml: sidebarOpen ? `${sidebarWidth}px` : 0,
+          ml: !isMobile && sidebarOpen ? `${sidebarWidth}px` : 0,
           mt: '64px',
-          p: 3,
+          p: { xs: 2, md: 3 },
           minHeight: '100vh',
           bgcolor: 'background.default',
           transition: 'margin-left .2s ease',
