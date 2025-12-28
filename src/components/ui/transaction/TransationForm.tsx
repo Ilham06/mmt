@@ -41,6 +41,12 @@ import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import PageWrapper from "@/components/layouts/pageWrapper";
 
+const todayISO = () => {
+  const d = new Date();
+  return d.toISOString().split("T")[0];
+};
+
+
 /* ======================= OPTIONS ======================= */
 const typeOptions = [
   { value: "INCOME", label: "Masuk", icon: <TrendingUpRounded />, color: "success" },
@@ -94,7 +100,7 @@ export default function TransactionFormPage() {
     categoryId: "",
     walletId: "",
     toWalletId: "",
-    date: "",
+    date: todayISO(),
     notes: "",
   });
 
@@ -145,7 +151,7 @@ export default function TransactionFormPage() {
       isEdit
         ? await updateTransaction({ id, ...payload }).unwrap()
         : await createTransaction(payload).unwrap();
-      router.push("/transactions");
+      router.push("/transaction");
     } catch (err: any) {
       setError(err.data?.error || "Gagal menyimpan transaksi 😭");
     }

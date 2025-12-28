@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -9,27 +10,16 @@ import {
   Chip,
   Divider,
   Button,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
 import SentimentSatisfiedRoundedIcon from "@mui/icons-material/SentimentSatisfiedRounded";
 import SentimentNeutralRoundedIcon from "@mui/icons-material/SentimentNeutralRounded";
 import SentimentVeryDissatisfiedRoundedIcon from "@mui/icons-material/SentimentVeryDissatisfiedRounded";
 
 import PageWrapper from "@/components/layouts/pageWrapper";
-
-// ======================= MOCK DAILY DATA =======================
-const recap = {
-  date: "Senin, 15 Juli 2025",
-  income: 200000,
-  expense: 85000,
-  questsCompleted: 2,
-  questsTotal: 3,
-  achievementsUnlocked: 1,
-  topCategory: "Makan",
-  topIcon: "🍔",
-  mood: "GOOD", // GOOD | OK | BAD
-};
 
 const moodMeta: any = {
   GOOD: {
@@ -53,26 +43,30 @@ const moodMeta: any = {
 };
 
 export default function DailyRecapPage() {
-  const mood = moodMeta[recap.mood];
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/recap/daily")
+      .then((res) => res.json())
+      .then(setData);
+  }, []);
+
+  if (!data) return null;
+
+  const mood = moodMeta[data.mood];
 
   return (
-    <PageWrapper
-      title="📅 Daily Recap"
-    //   subtitle="Ringkasan hari ini sebelum kamu istirahat"
-    >
+    <PageWrapper title="📅 Daily Recap">
       {/* HERO */}
-      <Card
-        sx={{
-          p: 4,
-          mb: 4,
-          borderRadius: 4,
-          textAlign: "center",
-          bgcolor: "#F4F6FF",
-        }}
-      >
+      <Card sx={{ p: 4, mb: 4, borderRadius: 4, textAlign: "center", bgcolor: "#F4F6FF" }}>
         <Stack spacing={1} alignItems="center">
           <Typography variant="h5" fontWeight={800}>
-            {recap.date}
+            {new Date(data.date).toLocaleDateString("id-ID", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
           </Typography>
 
           <Chip
@@ -82,11 +76,7 @@ export default function DailyRecapPage() {
             sx={{ fontWeight: 700 }}
           />
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            maxWidth={360}
-          >
+          <Typography variant="body2" color="text.secondary" maxWidth={360}>
             {mood.text}
           </Typography>
         </Stack>
@@ -94,94 +84,71 @@ export default function DailyRecapPage() {
 
       {/* SUMMARY */}
       <Grid container spacing={3} mb={4}>
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="caption" color="text.secondary">
               💚 Heal (Income)
             </Typography>
             <Typography variant="h6" fontWeight={700}>
-              Rp {recap.income.toLocaleString("id-ID")}
+              Rp {data.income.toLocaleString("id-ID")}
             </Typography>
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="caption" color="text.secondary">
               💥 Damage (Expense)
             </Typography>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              color="error.main"
-            >
-              Rp {recap.expense.toLocaleString("id-ID")}
-            </Typography>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="caption" color="text.secondary">
-              🎯 Quests
-            </Typography>
-            <Typography variant="h6" fontWeight={700}>
-              {recap.questsCompleted}/{recap.questsTotal} selesai
+            <Typography variant="h6" fontWeight={700} color="error.main">
+              Rp {data.expense.toLocaleString("id-ID")}
             </Typography>
           </Card>
         </Grid>
       </Grid>
 
       {/* INSIGHT */}
-      <Card sx={{ p: 3, borderRadius: 3, mb: 4 }}>
-        <Stack spacing={1}>
+      {data.topCategory && (
+        <Card sx={{ p: 3, borderRadius: 3, mb: 4 }}>
           <Typography fontWeight={700}>📊 Insight Hari Ini</Typography>
           <Typography variant="body2" color="text.secondary">
             Kategori paling sering kamu serang hari ini adalah{" "}
             <b>
-              {recap.topIcon} {recap.topCategory}
+              {data.topCategory.icon} {data.topCategory.name}
             </b>
-            . Coba dikontrol besok ya 😉
           </Typography>
-        </Stack>
-      </Card>
-
-      {/* ACHIEVEMENT */}
-      {recap.achievementsUnlocked > 0 && (
-        <Card
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            mb: 4,
-            bgcolor: "#FFF8E1",
-          }}
-        >
-          <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-          >
-            <EmojiEventsRoundedIcon color="warning" />
-            <Box>
-              <Typography fontWeight={700}>
-                Achievement Unlocked!
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Kamu membuka {recap.achievementsUnlocked} achievement
-                hari ini 🎉
-              </Typography>
-            </Box>
-          </Stack>
         </Card>
       )}
 
-      {/* FOOTER ACTION */}
-      <Stack direction="row" justifyContent="center" spacing={2}>
-        <Button variant="contained" sx={{ px: 4 }}>
-          Lanjut Besok 🚀
-        </Button>
-        <Button variant="outlined">Share Recap</Button>
-      </Stack>
+      {/* TRANSACTIONS LIST */}
+      <Card sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+        <Typography fontWeight={700} mb={2}>
+          📜 Aktivitas Hari Ini
+        </Typography>
+
+        {data.transactions.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            Belum ada transaksi hari ini.
+          </Typography>
+        ) : (
+          <List disablePadding>
+            {data.transactions.map((trx: any) => (
+              <ListItem key={trx.id} divider>
+                <ListItemText
+                  primary={
+                    <Typography fontWeight={600}>
+                      {trx.title}
+                    </Typography>
+                  }
+                  secondary={`${trx.category?.name ?? "-"} • ${
+                    trx.type === "EXPENSE" ? "-" : "+"
+                  } Rp ${trx.amount.toLocaleString("id-ID")}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Card>
     </PageWrapper>
   );
 }
