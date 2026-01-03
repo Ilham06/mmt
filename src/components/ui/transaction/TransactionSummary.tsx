@@ -19,9 +19,10 @@ type Props = {
     transferCount: number;
     count: number;
   };
+  month: string
 };
 
-export default function TransactionSummary({ stats }: Props) {
+export default function TransactionSummary({ stats, month }: Props) {
   if (!stats) return null;
 
   const items = [
@@ -46,19 +47,12 @@ export default function TransactionSummary({ stats }: Props) {
       icon: <TrendingDownRounded />,
       color: '#FF5630',
     },
-    {
-      label: 'Transfer',
-      count: stats.transferCount,
-      amount: stats.totalTransfer,
-      icon: <SwapHorizRounded />,
-      color: '#9155FD',
-    },
   ];
 
   return (
     <Grid container spacing={2}>
       {items.map((item, i) => (
-        <Grid size={{xs: 12, md: 3}} key={i}>
+        <Grid size={{xs: 12, md: 4}} key={i}>
           <MotionCard
             elevation={0}
             sx={{
@@ -88,7 +82,7 @@ export default function TransactionSummary({ stats }: Props) {
 
             <Box>
               <Typography variant="caption" color="text.secondary">
-                {item.label} • Bulan ini
+                {item.label} • {month}
               </Typography>
               <Typography variant="h6" fontWeight={700}>
                 Rp {item.amount.toLocaleString('id-ID')}

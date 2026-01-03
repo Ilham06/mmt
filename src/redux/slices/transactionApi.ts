@@ -45,6 +45,23 @@ export const transactionApi = createApi({
       invalidatesTags: ["Transaction", "Wallet"],
     }),
 
+    getExpenseByCategory: builder.query<
+      {
+        categoryId: string;
+        name: string;
+        icon: string;
+        color: string;
+        total: number;
+        percentage: number;
+      }[],
+      void
+    >({
+      query: () => ({
+        url: "transactions/by-category",
+      }),
+    }),
+
+
     getTransactionStats: builder.query<
       {
         totalIncome: number;
@@ -76,5 +93,6 @@ export const {
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
-  useGetTransactionStatsQuery
+  useGetTransactionStatsQuery,
+  useGetExpenseByCategoryQuery
 } = transactionApi;

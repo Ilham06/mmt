@@ -94,6 +94,7 @@ export function Topbar({
           borderBottom: "1px solid",
           borderColor: "divider",
           transition: "all .2s ease",
+          borderRadius: 0
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -102,27 +103,6 @@ export function Topbar({
             <IconButton onClick={onToggleSidebar}>
               <MenuIcon />
             </IconButton>
-
-            {!isMobile ? (
-              <Stack spacing={0}>
-                <Typography
-                  fontWeight={800}
-                  letterSpacing={0.3}
-                >
-                  Money Tracker
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                >
-                  Kelola keuangan harianmu
-                </Typography>
-              </Stack>
-            ) : (
-              <Typography fontWeight={800}>
-                Money
-              </Typography>
-            )}
           </Stack>
 
           {/* ================= RIGHT ================= */}
