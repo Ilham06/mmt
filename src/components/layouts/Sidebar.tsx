@@ -40,6 +40,8 @@ const menu = [
 
   { label: "Transaksi", href: "/transaction", icon: <BarChartIcon /> },
 
+  { label: "Transaksi Terjadwal", href: "/recurring", icon: <BarChartIcon /> },
+
   // { label: "Target Harian", href: "/quest", icon: <FlagIcon />, badge: "NEW" },
 
   { label: "Anggaran", href: "/budgets", icon: <FavoriteIcon /> },
