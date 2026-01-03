@@ -49,6 +49,22 @@ import { useRouter } from "next/navigation";
 import { useGetWalletsQuery } from "@/redux/slices/walletApi";
 import { useGetCategoriesQuery } from "@/redux/slices/categoryApi";
 
+const getMonthRange = (month: string) => {
+  if (!month) return {};
+
+  const [year, m] = month.split("-").map(Number);
+
+  const startDate = new Date(year, m - 1, 1);
+  const endDate = new Date(year, m, 0); // last day of month
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  };
+};
+
+
+
 export default function TransactionsPage() {
   const router = useRouter();
   const theme = useTheme();
@@ -64,24 +80,28 @@ export default function TransactionsPage() {
   const [activeRow, setActiveRow] = useState<string | null>(null);
 
   // ================= FETCH =================
+  const monthRange = getMonthRange(monthFilter);
+
   const { data = [], isLoading } = useGetTransactionsQuery(
     {
       type: tab !== "all" ? tab : undefined,
       category: categoryFilter || undefined,
       wallet: walletFilter || undefined,
-      month: monthFilter || undefined,
       q: search || undefined,
+      ...monthRange, // 👈 INI KUNCINYA
     },
     { refetchOnMountOrArgChange: true }
   );
+
 
   const { data: wallets = [] } = useGetWalletsQuery();
   const { data: categories = [] } = useGetCategoriesQuery();
   const { data: stats } = useGetTransactionStatsQuery({
     wallet: walletFilter || undefined,
     category: categoryFilter || undefined,
-    // month: monthFilter || undefined,
+    ...monthRange,
   });
+
 
   const [deleteTransaction] = useDeleteTransactionMutation();
 
@@ -127,20 +147,38 @@ export default function TransactionsPage() {
   };
 
   // ================= MONTH OPTIONS =================
+  const currentYear = new Date().getFullYear();
+
   const months = [
-    { value: "01", label: "Januari" },
-    { value: "02", label: "Februari" },
-    { value: "03", label: "Maret" },
-    { value: "04", label: "April" },
-    { value: "05", label: "Mei" },
-    { value: "06", label: "Juni" },
-    { value: "07", label: "Juli" },
-    { value: "08", label: "Agustus" },
-    { value: "09", label: "September" },
-    { value: "10", label: "Oktober" },
-    { value: "11", label: "November" },
-    { value: "12", label: "Desember" },
+    { value: `${currentYear}-01`, label: "Januari" },
+    { value: `${currentYear}-02`, label: "Februari" },
+    { value: `${currentYear}-03`, label: "Maret" },
+    { value: `${currentYear}-04`, label: "April" },
+    { value: `${currentYear}-05`, label: "Mei" },
+    { value: `${currentYear}-06`, label: "Juni" },
+    { value: `${currentYear}-07`, label: "Juli" },
+    { value: `${currentYear}-08`, label: "Agustus" },
+    { value: `${currentYear}-09`, label: "September" },
+    { value: `${currentYear}-10`, label: "Oktober" },
+    { value: `${currentYear}-11`, label: "November" },
+    { value: `${currentYear}-12`, label: "Desember" },
   ];
+
+  const getMonthLabel = (value: string) => {
+    if (!value) return "";
+    const [, month] = value.split("-");
+    return months.find((m) => m.value.endsWith(month))?.label;
+  };
+
+  const selectedCategory = categories.find(
+    (c: any) => c.id === categoryFilter
+  );
+
+  const selectedWallet = wallets.find(
+    (w: any) => w.id === walletFilter
+  );
+
+
 
   return (
     <PageWrapper
@@ -154,7 +192,7 @@ export default function TransactionsPage() {
       {/* ================= SUMMARY ================= */}
       <Grid container spacing={2} mb={3}>
         <Grid size={{ xs: 12 }}>
-          <TransactionSummary stats={stats} />
+          <TransactionSummary stats={stats} month={monthFilter ? `Bulan ${getMonthLabel(monthFilter)}` : ""} />
         </Grid>
       </Grid>
 
@@ -288,7 +326,57 @@ export default function TransactionsPage() {
               }}
             />
           </Stack>
+
+          {/* FILTER INFO */}
+{(monthFilter || categoryFilter || walletFilter || search) && (
+  <Box mt={2}>
+    <Typography
+      variant="caption"
+      color="text.secondary"
+      sx={{ display: "block", mb: 1 }}
+    >
+      Menampilkan hasil untuk:
+    </Typography>
+
+    <Stack direction="row" spacing={1} flexWrap="wrap">
+      {monthFilter && (
+        <Chip
+          size="small"
+          label={`Bulan: ${getMonthLabel(monthFilter)}`}
+          onDelete={() => setMonthFilter("")}
+        />
+      )}
+
+      {categoryFilter && (
+        <Chip
+          size="small"
+          label={`Kategori: ${selectedCategory?.name}`}
+          onDelete={() => setCategoryFilter("")}
+        />
+      )}
+
+      {walletFilter && (
+        <Chip
+          size="small"
+          label={`Dompet: ${selectedWallet?.name}`}
+          onDelete={() => setWalletFilter("")}
+        />
+      )}
+
+      {search && (
+        <Chip
+          size="small"
+          label={`Pencarian: "${search}"`}
+          onDelete={() => setSearch("")}
+        />
+      )}
+    </Stack>
+  </Box>
+)}
+
         </Box>
+
+        
 
         <Divider />
 

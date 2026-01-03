@@ -109,10 +109,10 @@ export function Sidebar({
       <Toolbar sx={{ px: 2, py: 2 }}>
         <Box>
           <Typography variant="h6" fontWeight={900}>
-            MoneyQuest
+            Money Tracker
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Financial Game Mode
+            Kelola keuangan harianmu
           </Typography>
         </Box>
       </Toolbar>
