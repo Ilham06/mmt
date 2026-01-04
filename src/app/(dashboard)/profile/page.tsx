@@ -56,12 +56,7 @@ export default function ProfilePage() {
     switch (activeMenu) {
       case "profile":
         return (
-          <EditProfileForm
-            initialData={{
-              name: user.name,
-              email: user.email,
-            }}
-          />
+          <EditProfileForm/>
         );
       case "security":
         return <SecurityForm />;
