@@ -5,6 +5,7 @@ import { transactionApi } from "./slices/transactionApi";
 import { budgetApi } from "./slices/budgetApi";
 import { recapApi } from './slices/recapApi';
 import { recurringApi } from "./slices/recurringApi";
+import { planApi } from "./slices/planApi";
 
 
 export const store = configureStore({
@@ -14,7 +15,8 @@ export const store = configureStore({
     [transactionApi.reducerPath]: transactionApi.reducer,
     [budgetApi.reducerPath]: budgetApi.reducer,
     [recapApi.reducerPath]: recapApi.reducer,
-    [recurringApi.reducerPath]: recurringApi.reducer
+    [recurringApi.reducerPath]: recurringApi.reducer,
+    [planApi.reducerPath]: planApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
@@ -23,7 +25,8 @@ export const store = configureStore({
       transactionApi.middleware,
       budgetApi.middleware,
       recapApi.middleware,
-      recurringApi.middleware
+      recurringApi.middleware,
+      planApi.middleware
     ]),
 });
 

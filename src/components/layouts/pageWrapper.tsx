@@ -25,10 +25,12 @@ interface ActionButton {
 
 export default function PageWrapper({
   title,
+  subtitle,
   actions,
   children,
 }: {
   title: string;
+  subtitle?: string;
   actions?: ActionButton[] | ActionButton;
   children: React.ReactNode;
 }) {
@@ -82,20 +84,32 @@ export default function PageWrapper({
 
   return (
     <Box>
-      {/* ================= TITLE (DESKTOP + MOBILE) ================= */}
+      {/* ================= TITLE + SUBTITLE ================= */}
       <Stack
         direction="row"
         justifyContent="space-between"
-        alignItems="center"
-        mb={1.5}
+        alignItems="flex-start"
+        mb={1}
       >
-        <Typography
-          variant={isMobile ? 'h5' : 'h4'}
-          fontWeight={700}
-          sx={{ wordBreak: 'break-word' }}
-        >
-          {title}
-        </Typography>
+        <Stack spacing={0.5}>
+          <Typography
+            variant={isMobile ? 'h5' : 'h4'}
+            fontWeight={700}
+            sx={{ wordBreak: 'break-word' }}
+          >
+            {title}
+          </Typography>
+
+          {subtitle && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ maxWidth: 600 }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+        </Stack>
 
         {/* ACTIONS — DESKTOP ONLY */}
         {!isMobile && actionButtons.length > 0 && renderActions()}
@@ -145,7 +159,7 @@ export default function PageWrapper({
         })}
       </Breadcrumbs>
 
-      {/* ================= ACTIONS — MOBILE ONLY (UNDER BREADCRUMB) ================= */}
+      {/* ================= ACTIONS — MOBILE ONLY ================= */}
       {isMobile && actionButtons.length > 0 && (
         <Box mb={2}>{renderActions(true)}</Box>
       )}

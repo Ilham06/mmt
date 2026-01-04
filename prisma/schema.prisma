@@ -56,6 +56,8 @@ model User {
   transactions         Transaction[]
   budgets              Budget[]
   recurringTransactions RecurringTransaction[]
+  plants Plan[]
+  planSavings PlanSaving[]
 }
 
 // ============================================================
@@ -101,6 +103,7 @@ model Wallet {
   transfersOut           Transaction[] @relation("TransferOut")
   transfersIn            Transaction[] @relation("TransferIn")
   recurringTransactions  RecurringTransaction[]
+  planSavings PlanSaving[]
 }
 
 // ============================================================
@@ -204,3 +207,50 @@ model Attachment {
 
   createdAt     DateTime   @default(now())
 }
+
+model Plan {
+  id            String     @id @default(uuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id])
+
+  name          String
+  description   String?
+  targetAmount  Int
+  currentAmount Int        @default(0)
+  targetDate    DateTime
+  mode          String     // SIMPLE | BREAKDOWN
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // ✅ RELATION
+  items         PlanItem[]
+  savings       PlanSaving[]
+}
+
+model PlanItem {
+  id        String   @id @default(uuid())
+  planId   String
+  plan     Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  name      String
+  amount    Int
+
+  createdAt DateTime @default(now())
+}
+
+model PlanSaving {
+  id        String   @id @default(uuid())
+  userId    String
+  planId    String
+  walletId  String
+
+  amount    Int
+  note      String?
+  date      DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+}
+

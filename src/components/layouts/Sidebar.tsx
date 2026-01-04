@@ -16,17 +16,18 @@ import {
 } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import FlagIcon from '@mui/icons-material/Flag';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import WalletIcon from '@mui/icons-material/Wallet';
-import CategoryIcon from '@mui/icons-material/Category';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded';
+import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
+import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
+
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -36,33 +37,73 @@ export const sidebarWidth = 240;
 
 // ================= MENU =================
 const menu = [
-  { label: "Dashboard", href: "/dashboard", icon: <DashboardIcon /> },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <DashboardIcon />,
+  },
 
-  { label: "Transaksi", href: "/transaction", icon: <BarChartIcon /> },
+  {
+    label: "Transaksi",
+    href: "/transaction",
+    icon: <SwapHorizRoundedIcon />,
+  },
 
-  { label: "Transaksi Terjadwal", href: "/recurring", icon: <BarChartIcon /> },
+  {
+    label: "Transaksi Terjadwal",
+    href: "/recurring",
+    icon: <ReplayRoundedIcon />,
+  },
 
-  // { label: "Target Harian", href: "/quest", icon: <FlagIcon />, badge: "NEW" },
+  {
+    label: "Financial Plan",
+    href: "/plan",
+    icon: <EmojiEventsRoundedIcon />,
+    badge: "NEW",
+  },
 
-  { label: "Anggaran", href: "/budgets", icon: <FavoriteIcon /> },
+  {
+    label: "Anggaran",
+    href: "/budgets",
+    icon: <FavoriteIcon />,
+  },
 
   {
     label: "Aset",
-    icon: <WalletIcon />,
+    icon: <AccountBalanceWalletRoundedIcon />,
     children: [
-      { label: "Dompet", href: "/wallets", icon: <WalletIcon /> },
-      { label: "Kategori", href: "/categories", icon: <CategoryIcon /> },
+      {
+        label: "Dompet",
+        href: "/wallets",
+        icon: <AccountBalanceWalletRoundedIcon />,
+      },
+      {
+        label: "Kategori",
+        href: "/categories",
+        icon: <CategoryRoundedIcon />,
+      },
     ],
   },
 
-  // { label: "Pencapaian", href: "/archivement", icon: <EmojiEventsIcon /> },
+  {
+    label: "Ringkasan Harian",
+    href: "/recap",
+    icon: <CalendarTodayIcon />,
+  },
 
-  { label: "Ringkasan Harian", href: "/recap", icon: <CalendarTodayIcon /> },
+  {
+    label: "Profil",
+    href: "/profile",
+    icon: <PersonIcon />,
+  },
 
-  { label: "Profil", href: "/profile", icon: <PersonIcon /> },
-
-  { label: "Pengaturan", href: "/setting", icon: <SettingsIcon /> },
+  // {
+  //   label: "Pengaturan",
+  //   href: "/setting",
+  //   icon: <SettingsIcon />,
+  // },
 ];
+
 
 
 export function Sidebar({
@@ -129,7 +170,7 @@ export function Sidebar({
               <Fragment key={item.label}>
                 <ListItemButton
                   onClick={() => toggleMenu(item.label)}
-                  sx={{ borderRadius: 2, px: 2, py: 1.2 }}
+                  sx={{ borderRadius: 2, px: 2, py: 1.2, mb: .5}}
                 >
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     {item.icon}
@@ -196,6 +237,7 @@ export function Sidebar({
               }}
               sx={{
                 borderRadius: 2,
+                mb: .5,
                 px: 2,
                 py: 1.2,
                 ...(active && {

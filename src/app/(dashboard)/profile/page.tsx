@@ -3,19 +3,22 @@
 import {
   Box,
   Card,
-  Grid,
   Typography,
   Stack,
-  LinearProgress,
-  Chip,
   Avatar,
   Divider,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
-import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
+import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
 import PageWrapper from "@/components/layouts/pageWrapper";
 
@@ -23,29 +26,16 @@ import PageWrapper from "@/components/layouts/pageWrapper";
 const user = {
   name: "Ilham",
   joinDate: "Juni 2025",
-  level: 5,
-  xp: 420,
-  nextLevelXp: 500,
-  streak: 7,
-  achievements: 8,
-  records: 24,
-  financialHealth: "Baik",
 };
 
 export default function ProfilePage() {
-  const progress = (user.xp / user.nextLevelXp) * 100;
-
   return (
-    <PageWrapper title="Profil">
+    <PageWrapper
+      title="Profil"
+      subtitle="Kelola akun dan preferensi kamu"
+    >
       {/* ================= PROFILE HEADER ================= */}
-      <Card
-        sx={{
-          p: 4,
-          mb: 4,
-          borderRadius: 4,
-          bgcolor: "background.default",
-        }}
-      >
+      <Card sx={{ p: 4, mb: 4 }}>
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={3}
@@ -62,128 +52,83 @@ export default function ProfilePage() {
             {user.name.charAt(0)}
           </Avatar>
 
-          <Box flex={1}>
-            <Typography variant="h5" fontWeight={800}>
+          <Box>
+            <Typography variant="h5" fontWeight={700}>
               {user.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Bergabung sejak {user.joinDate}
             </Typography>
-
-            {/* PROGRESS */}
-            <Box mt={2}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                mb={0.5}
-              >
-                <Typography fontWeight={700}>
-                  Progress Konsistensi
-                </Typography>
-                <Typography variant="caption">
-                  {user.xp}/{user.nextLevelXp}
-                </Typography>
-              </Stack>
-
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                sx={{
-                  height: 10,
-                  borderRadius: 5,
-                }}
-              />
-
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                mt={0.5}
-                display="block"
-              >
-                Terus jaga kebiasaan baik untuk meningkatkan progres ini
-              </Typography>
-            </Box>
           </Box>
         </Stack>
       </Card>
 
-      {/* ================= SUMMARY STATS ================= */}
-      <Grid container spacing={3} mb={4}>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <LocalFireDepartmentRoundedIcon color="error" />
-              <Typography fontWeight={700}>
-                {user.streak} hari
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Konsistensi Aktif
-              </Typography>
-            </Stack>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <EmojiEventsRoundedIcon color="warning" />
-              <Typography fontWeight={700}>
-                {user.achievements}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Pencapaian
-              </Typography>
-            </Stack>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <TrendingUpRoundedIcon color="success" />
-              <Typography fontWeight={700}>
-                {user.records}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Catatan Keuangan
-              </Typography>
-            </Stack>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <ShieldRoundedIcon color="primary" />
-              <Typography fontWeight={700}>
-                {user.financialHealth}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Kondisi Finansial
-              </Typography>
-            </Stack>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* ================= PERSONAL INSIGHT ================= */}
+      {/* ================= ACCOUNT SETTINGS ================= */}
       <Card sx={{ p: 3 }}>
         <Typography fontWeight={700} mb={2}>
-          Karakter Finansial
+          Pengaturan Akun
         </Typography>
 
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          <Chip label="Disiplin" color="success" />
-          <Chip label="Terencana" color="primary" />
-          <Chip label="Perlu Konsistensi" />
-        </Stack>
+        <List disablePadding>
+          <ListItemButton>
+            <ListItemIcon>
+              <PersonOutlineRoundedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Edit Profil"
+              secondary="Nama dan informasi akun"
+            />
+          </ListItemButton>
 
-        <Divider sx={{ my: 2 }} />
+          <ListItemButton>
+            <ListItemIcon>
+              <LockRoundedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Keamanan"
+              secondary="Password dan autentikasi"
+            />
+          </ListItemButton>
 
-        <Typography variant="body2" color="text.secondary">
-          Karakter ini terbentuk dari kebiasaan mencatat transaksi dan menjaga konsistensi.
-          Perubahan kecil yang dilakukan rutin akan berdampak besar dalam jangka panjang.
-        </Typography>
+          <ListItemButton>
+            <ListItemIcon>
+              <NotificationsNoneRoundedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Notifikasi"
+              secondary="Pengingat dan pemberitahuan"
+            />
+          </ListItemButton>
+
+          <ListItemButton>
+            <ListItemIcon>
+              <TuneRoundedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Preferensi"
+              secondary="Bahasa dan tampilan aplikasi"
+            />
+          </ListItemButton>
+
+          <ListItemButton>
+            <ListItemIcon>
+              <HelpOutlineRoundedIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Bantuan & Support"
+              secondary="Panduan penggunaan"
+            />
+          </ListItemButton>
+
+          <Divider sx={{ my: 1 }} />
+
+          <ListItemButton sx={{ color: "error.main" }}>
+            <ListItemIcon sx={{ color: "error.main" }}>
+              <LogoutRoundedIcon />
+            </ListItemIcon>
+            <ListItemText primary="Keluar" />
+          </ListItemButton>
+        </List>
       </Card>
     </PageWrapper>
   );
