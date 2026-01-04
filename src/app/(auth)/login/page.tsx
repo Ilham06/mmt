@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Box,
-  Paper,
+  Card,
   TextField,
   Typography,
   Button,
@@ -11,18 +11,22 @@ import {
   InputAdornment,
   CircularProgress,
   Stack,
-  Chip,
+  Alert,
+  Divider,
 } from "@mui/material";
 
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import LoginIcon from "@mui/icons-material/Login";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -44,14 +48,14 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error || "Login gagal");
+        setErrorMsg(data.error || "Email atau password salah");
         setLoading(false);
         return;
       }
 
       router.replace("/dashboard");
     } catch {
-      setErrorMsg("Server error 😭");
+      setErrorMsg("Terjadi kesalahan server");
       setLoading(false);
     }
   };
@@ -63,86 +67,149 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "linear-gradient(135deg,#43cea2,#185a9d)",
         px: 2,
       }}
     >
-      <Paper
+      <Card
         sx={{
           width: "100%",
           maxWidth: 420,
           p: 4,
-          borderRadius: 4,
         }}
       >
-        <Stack spacing={1} alignItems="center" mb={3}>
-          <LocalFireDepartmentRoundedIcon color="warning" fontSize="large" />
-          <Typography variant="h4" fontWeight={900}>
-            Continue Game
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Progresmu sudah menunggu 🔥
-          </Typography>
-        </Stack>
+        <Stack spacing={3}>
+          {/* ================= HEADER ================= */}
+          <Stack spacing={1} alignItems="center">
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: 3,
+                bgcolor: "background.paper",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0px 8px 24px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Image
+                src="/images/logo/main-logo.svg"
+                alt="App Logo"
+                width={42}
+                height={42}
+                priority
+              />
+            </Box>
 
-        {errorMsg && (
-          <Typography
-            color="error"
-            textAlign="center"
-            sx={{ mb: 2, bgcolor: "#ffebee", p: 1, borderRadius: 2 }}
-          >
-            {errorMsg}
-          </Typography>
-        )}
 
-        <Stack spacing={2}>
-          <TextField
-            label="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            <Typography fontWeight={800} fontSize={22}>
+              Masuk ke Akun
+            </Typography>
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
+              Kelola keuanganmu dengan aman dan terarah
+            </Typography>
+          </Stack>
+
+          <Divider />
+
+          {/* ================= ERROR ================= */}
+          {errorMsg && (
+            <Alert severity="error">
+              {errorMsg}
+            </Alert>
+          )}
+
+          {/* ================= FORM ================= */}
+          <Stack spacing={2.5}>
+            <Stack spacing={0.8}>
+              <Typography fontWeight={600}>
+                Email
+              </Typography>
+              <TextField
+                placeholder="you@email.com"
+                value={form.email}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    email: e.target.value,
+                  })
+                }
+                fullWidth
+              />
+            </Stack>
+
+            <Stack spacing={0.8}>
+              <Typography fontWeight={600}>
+                Password
+              </Typography>
+              <TextField
+                type={showPass ? "text" : "password"}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    password: e.target.value,
+                  })
+                }
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setShowPass(!showPass)
+                        }
+                      >
+                        {showPass ? (
+                          <VisibilityOffRoundedIcon />
+                        ) : (
+                          <VisibilityRoundedIcon />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
+          </Stack>
+
+          {/* ================= ACTION ================= */}
+          <Button
             fullWidth
-          />
-
-          <TextField
-            label="Password"
-            type={showPass ? "text" : "password"}
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            fullWidth
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPass(!showPass)}>
-                    {showPass ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            variant="contained"
+            disabled={loading}
+            onClick={handleLogin}
+            sx={{
+              py: 1.3,
+              borderRadius: 2,
+              fontWeight: 700,
+              textTransform: "none",
+              fontSize: 15,
             }}
-          />
+          >
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : (
+              "Masuk"
+            )}
+          </Button>
+
+          {/* ================= FOOTER ================= */}
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            textAlign="center"
+          >
+            © {new Date().getFullYear()} Money Tracker
+          </Typography>
         </Stack>
-
-        <Button
-          fullWidth
-          sx={{
-            mt: 3,
-            py: 1.4,
-            borderRadius: 3,
-            fontWeight: 800,
-            textTransform: "none",
-            fontSize: 16,
-          }}
-          variant="contained"
-          disabled={loading}
-          onClick={handleLogin}
-          startIcon={!loading && <LoginIcon />}
-        >
-          {loading ? <CircularProgress size={24} /> : "Enter World"}
-        </Button>
-
-        <Typography textAlign="center" mt={3} variant="body2">
-          © {new Date().getFullYear()} Financial Game
-        </Typography>
-      </Paper>
+      </Card>
     </Box>
   );
 }

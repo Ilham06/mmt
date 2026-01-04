@@ -119,7 +119,7 @@ export default function PageWrapper({
       <Breadcrumbs
         separator="›"
         sx={{
-          mb: 1.5,
+          mb: 4,
           fontSize: isMobile ? 12 : 14,
           color: 'text.secondary',
           overflow: 'hidden',
