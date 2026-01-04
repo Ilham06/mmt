@@ -1,190 +1,220 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   Box,
   Card,
-  Grid,
   Typography,
   Stack,
-  LinearProgress,
-  Chip,
   Avatar,
   Divider,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Grid,
 } from "@mui/material";
 
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
-import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-import ShieldRoundedIcon from "@mui/icons-material/ShieldRounded";
+import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
 import PageWrapper from "@/components/layouts/pageWrapper";
+import EditProfileForm from "@/components/ui/profile/updateProfileForm";
+import SecurityForm from "@/components/ui/profile/securityForm";
+import NotificationSettings from "@/components/ui/profile/notificationSetting";
+import PreferenceForm from "@/components/ui/profile/preferenceForm";
+import HelpSupport from "@/components/ui/profile/helpSupport";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
-/* ================= MOCK USER DATA ================= */
+/* ===== CONTENT COMPONENTS ===== */
+
+/* ================= MOCK USER ================= */
 const user = {
   name: "Ilham",
   joinDate: "Juni 2025",
-  level: 5,
-  xp: 420,
-  nextLevelXp: 500,
-  streak: 7,
-  achievements: 8,
-  records: 24,
-  financialHealth: "Baik",
+  email: "ilham@email.com",
 };
 
+type MenuKey =
+  | "profile"
+  | "security"
+  | "notification"
+  | "preference"
+  | "help";
+
 export default function ProfilePage() {
-  const progress = (user.xp / user.nextLevelXp) * 100;
+  const [activeMenu, setActiveMenu] =
+    useState<MenuKey>("profile");
+  const [openLogout, setOpenLogout] = useState(false);
+
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "profile":
+        return (
+          <EditProfileForm
+            initialData={{
+              name: user.name,
+              email: user.email,
+            }}
+          />
+        );
+      case "security":
+        return <SecurityForm />;
+      case "notification":
+        return <NotificationSettings />;
+      case "preference":
+        return <PreferenceForm />;
+      case "help":
+        return <HelpSupport />;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <PageWrapper title="Profil">
-      {/* ================= PROFILE HEADER ================= */}
+    <PageWrapper
+      title="Profil"
+      subtitle="Kelola akun dan preferensi kamu"
+    >
+      {/* ================= HEADER ================= */}
       <Card
         sx={{
           p: 4,
-          mb: 4,
-          borderRadius: 4,
-          bgcolor: "background.default",
+          mb: 2,
         }}
       >
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={3}
-          alignItems="center"
-        >
+        <Stack direction="row" spacing={3} alignItems="center">
           <Avatar
             sx={{
-              width: 96,
-              height: 96,
-              fontSize: 36,
+              width: 88,
+              height: 88,
+              fontSize: 32,
               bgcolor: "primary.main",
             }}
           >
             {user.name.charAt(0)}
           </Avatar>
 
-          <Box flex={1}>
-            <Typography variant="h5" fontWeight={800}>
+          <Box>
+            <Typography fontWeight={800} fontSize={22}>
               {user.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Bergabung sejak {user.joinDate}
             </Typography>
-
-            {/* PROGRESS */}
-            <Box mt={2}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                mb={0.5}
-              >
-                <Typography fontWeight={700}>
-                  Progress Konsistensi
-                </Typography>
-                <Typography variant="caption">
-                  {user.xp}/{user.nextLevelXp}
-                </Typography>
-              </Stack>
-
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                sx={{
-                  height: 10,
-                  borderRadius: 5,
-                }}
-              />
-
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                mt={0.5}
-                display="block"
-              >
-                Terus jaga kebiasaan baik untuk meningkatkan progres ini
-              </Typography>
-            </Box>
           </Box>
         </Stack>
       </Card>
 
-      {/* ================= SUMMARY STATS ================= */}
-      <Grid container spacing={3} mb={4}>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <LocalFireDepartmentRoundedIcon color="error" />
-              <Typography fontWeight={700}>
-                {user.streak} hari
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Konsistensi Aktif
-              </Typography>
-            </Stack>
+      {/* ================= SETTINGS ================= */}
+      <Grid container spacing={2}>
+        {/* LEFT MENU */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card
+            sx={{
+              p: 2,
+              borderRadius: 4,
+              position: "sticky",
+              top: 88,
+            }}
+          >
+            <List disablePadding>
+              {[
+                {
+                  key: "profile",
+                  label: "Edit Profil",
+                  desc: "Nama & email",
+                  icon: <PersonOutlineRoundedIcon />,
+                },
+                {
+                  key: "security",
+                  label: "Keamanan",
+                  desc: "Password & autentikasi",
+                  icon: <LockRoundedIcon />,
+                },
+                {
+                  key: "notification",
+                  label: "Notifikasi",
+                  desc: "Pengingat & alert",
+                  icon: <NotificationsNoneRoundedIcon />,
+                },
+                {
+                  key: "preference",
+                  label: "Preferensi",
+                  desc: "Bahasa & tampilan",
+                  icon: <TuneRoundedIcon />,
+                },
+                {
+                  key: "help",
+                  label: "Bantuan",
+                  desc: "Panduan & support",
+                  icon: <HelpOutlineRoundedIcon />,
+                },
+              ].map((item) => (
+                <ListItemButton
+                  key={item.key}
+                  selected={activeMenu === item.key}
+                  onClick={() =>
+                    setActiveMenu(item.key as MenuKey)
+                  }
+                  sx={{
+                    borderRadius: 2,
+                    mb: 0.5,
+                    "&.Mui-selected": {
+                      bgcolor: "rgba(32,101,209,.08)",
+                    },
+                  }}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    secondary={item.desc}
+                  />
+                </ListItemButton>
+              ))}
+
+              <Divider sx={{ my: 1 }} />
+
+              <ListItemButton
+                onClick={() => setOpenLogout(true)}
+                sx={{
+                  borderRadius: 2,
+                  color: "error.main",
+                }}
+              >
+                <ListItemIcon sx={{ color: "error.main" }}>
+                  <LogoutRoundedIcon />
+                </ListItemIcon>
+                <ListItemText primary="Keluar" />
+              </ListItemButton>
+            </List>
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <EmojiEventsRoundedIcon color="warning" />
-              <Typography fontWeight={700}>
-                {user.achievements}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Pencapaian
-              </Typography>
-            </Stack>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <TrendingUpRoundedIcon color="success" />
-              <Typography fontWeight={700}>
-                {user.records}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Catatan Keuangan
-              </Typography>
-            </Stack>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={1}>
-              <ShieldRoundedIcon color="primary" />
-              <Typography fontWeight={700}>
-                {user.financialHealth}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Kondisi Finansial
-              </Typography>
-            </Stack>
-          </Card>
+        {/* RIGHT CONTENT */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          {renderContent()}
         </Grid>
       </Grid>
 
-      {/* ================= PERSONAL INSIGHT ================= */}
-      <Card sx={{ p: 3 }}>
-        <Typography fontWeight={700} mb={2}>
-          Karakter Finansial
-        </Typography>
-
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          <Chip label="Disiplin" color="success" />
-          <Chip label="Terencana" color="primary" />
-          <Chip label="Perlu Konsistensi" />
-        </Stack>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Typography variant="body2" color="text.secondary">
-          Karakter ini terbentuk dari kebiasaan mencatat transaksi dan menjaga konsistensi.
-          Perubahan kecil yang dilakukan rutin akan berdampak besar dalam jangka panjang.
-        </Typography>
-      </Card>
+      {/* ================= LOGOUT DIALOG ================= */}
+      <ConfirmDialog
+        open={openLogout}
+        onClose={() => setOpenLogout(false)}
+        onConfirm={() => {
+          console.log("LOGOUT ACTION");
+          setOpenLogout(false);
+        }}
+        title="Keluar dari akun?"
+        description="Kamu akan perlu login kembali untuk mengakses aplikasi."
+        confirmText="Keluar"
+        color="error"
+      />
     </PageWrapper>
   );
 }

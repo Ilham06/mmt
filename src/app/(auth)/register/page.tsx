@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Box,
-  Paper,
+  Card,
   TextField,
   Typography,
   Button,
@@ -11,13 +11,15 @@ import {
   InputAdornment,
   CircularProgress,
   Stack,
-  Chip,
+  Alert,
 } from "@mui/material";
 
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
+import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
+import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
+
+import Link from "next/link";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -37,7 +39,7 @@ export default function RegisterPage() {
     setErrorMsg("");
 
     if (form.password !== form.confirm) {
-      setErrorMsg("Password & konfirmasi tidak sama 😵");
+      setErrorMsg("Password dan konfirmasi tidak sama");
       setLoading(false);
       return;
     }
@@ -56,14 +58,14 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error || "Gagal membuat player");
+        setErrorMsg(data.error || "Gagal membuat akun");
         setLoading(false);
         return;
       }
 
       window.location.href = "/login";
     } catch {
-      setErrorMsg("Server lagi capek 😭");
+      setErrorMsg("Terjadi kesalahan server");
       setLoading(false);
     }
   };
@@ -75,11 +77,11 @@ export default function RegisterPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "linear-gradient(135deg,#667eea,#764ba2)",
+        bgcolor: "background.default",
         px: 2,
       }}
     >
-      <Paper
+      <Card
         sx={{
           width: "100%",
           maxWidth: 460,
@@ -87,107 +89,202 @@ export default function RegisterPage() {
           borderRadius: 4,
         }}
       >
-        {/* HEADER */}
-        <Stack spacing={1} alignItems="center" mb={3}>
-          <SportsEsportsIcon color="primary" fontSize="large" />
-          <Typography variant="h4" fontWeight={900}>
-            Create Player
-          </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            Mulai petualangan finansialmu 🚀
-          </Typography>
-        </Stack>
+        <Stack spacing={3}>
+          {/* ================= HEADER ================= */}
+          <Stack spacing={1.2} alignItems="center">
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: 3,
+                bgcolor: "background.paper",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0px 8px 24px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Image
+                src="/images/logo/main-logo.svg"
+                alt="App Logo"
+                width={42}
+                height={42}
+                priority
+              />
+            </Box>
 
-        {/* ERROR */}
-        {errorMsg && (
-          <Typography
-            color="error"
-            textAlign="center"
-            sx={{ mb: 2, bgcolor: "#ffebee", p: 1, borderRadius: 2 }}
+
+            <Typography fontWeight={800} fontSize={22}>
+              Buat Akun Baru
+            </Typography>
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+            >
+              Mulai kelola keuanganmu dengan lebih rapi
+            </Typography>
+          </Stack>
+
+          {/* ================= ERROR ================= */}
+          {errorMsg && (
+            <Alert severity="error">
+              {errorMsg}
+            </Alert>
+          )}
+
+          {/* ================= FORM ================= */}
+          <Stack spacing={2.5}>
+            <Stack spacing={0.8}>
+              <Typography fontWeight={600}>
+                Nama
+              </Typography>
+              <TextField
+                placeholder="Nama lengkap"
+                value={form.name}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    name: e.target.value,
+                  })
+                }
+                fullWidth
+              />
+            </Stack>
+
+            <Stack spacing={0.8}>
+              <Typography fontWeight={600}>
+                Email
+              </Typography>
+              <TextField
+                type="email"
+                placeholder="you@email.com"
+                value={form.email}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    email: e.target.value,
+                  })
+                }
+                fullWidth
+              />
+            </Stack>
+
+            <Stack spacing={0.8}>
+              <Typography fontWeight={600}>
+                Password
+              </Typography>
+              <TextField
+                type={showPass ? "text" : "password"}
+                placeholder="Minimal 8 karakter"
+                value={form.password}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    password: e.target.value,
+                  })
+                }
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setShowPass(!showPass)
+                        }
+                      >
+                        {showPass ? (
+                          <VisibilityOffRoundedIcon />
+                        ) : (
+                          <VisibilityRoundedIcon />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
+
+            <Stack spacing={0.8}>
+              <Typography fontWeight={600}>
+                Konfirmasi Password
+              </Typography>
+              <TextField
+                type={showConfirm ? "text" : "password"}
+                placeholder="Ulangi password"
+                value={form.confirm}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    confirm: e.target.value,
+                  })
+                }
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setShowConfirm(!showConfirm)
+                        }
+                      >
+                        {showConfirm ? (
+                          <VisibilityOffRoundedIcon />
+                        ) : (
+                          <VisibilityRoundedIcon />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
+          </Stack>
+
+          {/* ================= ACTION ================= */}
+          <Button
+            fullWidth
+            variant="contained"
+            disabled={loading}
+            onClick={handleRegister}
+            sx={{
+              py: 1.3,
+              borderRadius: 2,
+              fontWeight: 700,
+              textTransform: "none",
+              fontSize: 15,
+            }}
           >
-            {errorMsg}
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : (
+              "Daftar"
+            )}
+          </Button>
+
+          {/* ================= FOOTER ================= */}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            textAlign="center"
+          >
+            Sudah punya akun?{" "}
+            <Link
+              href="/login"
+              style={{
+                fontWeight: 700,
+                color: "#2065D1",
+                textDecoration: "none",
+              }}
+            >
+              Masuk
+            </Link>
           </Typography>
-        )}
-
-        <Stack spacing={2}>
-          <TextField
-            label="Nama Player"
-            placeholder="Dompet Slayer"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            fullWidth
-          />
-
-          <TextField
-            label="Email"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            fullWidth
-          />
-
-          <TextField
-            label="Password"
-            type={showPass ? "text" : "password"}
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            fullWidth
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPass(!showPass)}>
-                    {showPass ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <TextField
-            label="Confirm Password"
-            type={showConfirm ? "text" : "password"}
-            value={form.confirm}
-            onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-            fullWidth
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowConfirm(!showConfirm)}>
-                    {showConfirm ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
         </Stack>
-
-        {/* ACTION */}
-        <Button
-          fullWidth
-          sx={{
-            mt: 3,
-            py: 1.4,
-            borderRadius: 3,
-            fontWeight: 800,
-            textTransform: "none",
-            fontSize: 16,
-          }}
-          variant="contained"
-          disabled={loading}
-          onClick={handleRegister}
-          startIcon={!loading && <PersonAddAlt1Icon />}
-        >
-          {loading ? <CircularProgress size={24} /> : "Start New Game"}
-        </Button>
-
-        {/* FOOTER */}
-        <Typography textAlign="center" mt={3} variant="body2">
-          Sudah punya player?{" "}
-          <a href="/login" style={{ fontWeight: 700 }}>
-            Continue Game →
-          </a>
-        </Typography>
-      </Paper>
+      </Card>
     </Box>
   );
 }

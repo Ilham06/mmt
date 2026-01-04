@@ -1,33 +1,32 @@
-
 import ReduxProvider from "@/provider/ReduxProvider";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/* ================= FONT ================= */
+const inter = Inter({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
+/* ================= META ================= */
 export const metadata: Metadata = {
   title: "Dashboard | Money Tracker",
   description:
     "Pantau pemasukan, pengeluaran, dan saldo dompet kamu secara real-time dalam satu dashboard.",
 };
 
+/* ================= LAYOUT ================= */
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-       <ReduxProvider> {children}</ReduxProvider>
+    <html lang="id" className={inter.variable}>
+      <body>
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );
